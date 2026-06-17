@@ -14,7 +14,7 @@ export default function Hero({ raised, goal }: HeroProps) {
     document.getElementById("give")?.scrollIntoView({ behavior: "smooth" });
   };
 
-  const scrollToWatch = () => {
+  const scrollToAbout = () => {
     document.getElementById("about")?.scrollIntoView({ behavior: "smooth" });
   };
 
@@ -23,13 +23,13 @@ export default function Hero({ raised, goal }: HeroProps) {
       id="home"
       className="relative flex min-h-screen items-center justify-center overflow-hidden"
     >
-      <div
-        className="absolute inset-0 bg-gradient-to-b from-maroon/90 via-magenta/70 to-ink/95"
-      />
+      <div className="absolute inset-0 bg-gradient-to-b from-maroon/90 via-magenta/70 to-ink/95" />
 
       <div
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-20"
-        style={{ backgroundImage: "url('/images/church-bg.jpg')" }}
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-10"
+        style={{
+          backgroundImage: "url('/images/church-bg.svg')",
+        }}
       />
 
       <div className="relative z-10 mx-auto flex w-full max-w-4xl flex-col items-center px-4 text-center">
@@ -40,13 +40,13 @@ export default function Hero({ raised, goal }: HeroProps) {
           className="mb-6"
         >
           <p className="mb-2 text-sm font-medium uppercase tracking-[0.3em] text-gold">
-            Karibu • Harambee 2026
+            Karibu &bull; Harambee 2026
           </p>
           <h1 className="font-display text-4xl font-bold leading-tight text-cream md:text-6xl">
             Tujenge Pamoja
           </h1>
           <p className="mt-3 text-lg text-cream/80 md:text-xl">
-            Building AIPCA Bahati Cathedral together —{" "}
+            Building AIPCA Bahati Cathedral together &mdash;{" "}
             <span className="text-gold">your gift matters</span>
           </p>
         </motion.div>
@@ -73,7 +73,7 @@ export default function Hero({ raised, goal }: HeroProps) {
             Toa Sasa &rarr;
           </button>
           <button
-            onClick={scrollToWatch}
+            onClick={scrollToAbout}
             className="rounded-full border border-cream/30 bg-cream/10 px-10 py-4 text-lg font-medium text-cream backdrop-blur-sm transition hover:bg-cream/20"
           >
             Learn More

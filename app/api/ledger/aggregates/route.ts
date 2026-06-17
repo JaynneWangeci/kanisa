@@ -2,6 +2,18 @@ import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 
 export async function GET() {
+  if (!supabase) {
+    return NextResponse.json({
+      goal: 5000000,
+      total_raised: 842500,
+      total_donors: 0,
+      avg_gift: 0,
+      mpesa_split: 0,
+      bank_split: 0,
+      recent_donations: [],
+    });
+  }
+
   const { data: campaign } = await supabase
     .from("campaigns")
     .select("goal, raised")

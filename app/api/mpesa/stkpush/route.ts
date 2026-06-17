@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabaseService } from "@/lib/supabase";
+import { requireServiceSupabase } from "@/lib/supabase";
 import { enqueuePayment } from "@/lib/queue";
 import crypto from "crypto";
 
@@ -21,12 +21,22 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  let svc;
+  try {
+    svc = requireServiceSupabase();
+  } catch {
+    return NextResponse.json(
+      { error: "Database not configured" },
+      { status: 500 },
+    );
+  }
+
   const phoneHash = crypto
     .createHash("sha256")
     .update(phone.replace(/\s/g, ""))
     .digest("hex");
 
-  const { data: recent } = await supabaseService
+  const { data: recent } = await svc
     .from("phone_lookup")
     .select("created_at")
     .eq("phone_hash", phoneHash)
@@ -44,7 +54,7 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  const { data: campaign } = await supabaseService
+  const { data: campaign } = await svc
     .from("campaigns")
     .select("id")
     .eq("slug", "development-fund")
@@ -58,7 +68,7 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const { data: donation, error: donationError } = await supabaseService
+  const { data: donation, error: donationError } = await svc
     .from("donations")
     .insert({
       campaign_id: campaign.id,
@@ -80,7 +90,7 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  await supabaseService.from("phone_lookup").insert({
+  await svc.from("phone_lookup").insert({
     phone_hash: phoneHash,
     donation_id: donation.id,
   });

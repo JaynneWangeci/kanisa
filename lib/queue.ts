@@ -1,9 +1,17 @@
-import { supabaseService } from "./supabase";
+import { requireServiceSupabase } from "./supabase";
 import { stkPush } from "./daraja";
 import type { Donation } from "@/types";
 
 export async function enqueuePayment(donationId: string) {
-  const { error } = await supabaseService.from("payment_queue").insert({
+  let svc;
+  try {
+    svc = requireServiceSupabase();
+  } catch {
+    console.error("Supabase not configured, skipping queue");
+    return;
+  }
+
+  const { error } = await svc.from("payment_queue").insert({
     donation_id: donationId,
     status: "pending",
   });
@@ -16,7 +24,14 @@ export async function enqueuePayment(donationId: string) {
 export async function processPayment(
   donationId: string,
 ): Promise<{ success: boolean; error?: string }> {
-  const { data: donation, error: fetchError } = await supabaseService
+  let svc;
+  try {
+    svc = requireServiceSupabase();
+  } catch {
+    return { success: false, error: "Database not configured" };
+  }
+
+  const { data: donation, error: fetchError } = await svc
     .from("donations")
     .select("*")
     .eq("id", donationId)
@@ -35,7 +50,7 @@ export async function processPayment(
     );
 
     if (result.ResponseCode === "0") {
-      const { error: updateError } = await supabaseService
+      const { error: updateError } = await svc
         .from("donations")
         .update({ checkout_request_id: result.CheckoutRequestID })
         .eq("id", donationId);
@@ -44,28 +59,20 @@ export async function processPayment(
         return { success: false, error: updateError.message };
       }
 
-      const { error: queueError } = await supabaseService
+      await svc
         .from("payment_queue")
         .update({ status: "processing", attempts: 1 })
         .eq("donation_id", donationId);
 
-      if (queueError) {
-        console.error("Failed to update queue:", queueError);
-      }
-
       return { success: true };
     }
 
-    const { error: failError } = await supabaseService
+    await svc
       .from("donations")
       .update({ status: "failed" })
       .eq("id", donationId);
 
-    if (failError) {
-      console.error("Failed to mark donation failed:", failError);
-    }
-
-    await supabaseService
+    await svc
       .from("payment_queue")
       .update({
         status: "failed",
@@ -76,7 +83,7 @@ export async function processPayment(
 
     return { success: false, error: result.ResponseDescription };
   } catch (err) {
-    await supabaseService
+    await svc
       .from("payment_queue")
       .update({
         status: "failed",

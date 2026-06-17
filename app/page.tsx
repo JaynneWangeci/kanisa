@@ -11,22 +11,24 @@ import { supabase } from "@/lib/supabase";
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
-  let raised = 0;
+  let raised = 842500;
   let goal = 5000000;
 
-  try {
-    const { data: campaign } = await supabase
-      .from("campaigns")
-      .select("raised, goal")
-      .eq("slug", "development-fund")
-      .single();
+  if (supabase) {
+    try {
+      const { data: campaign } = await supabase
+        .from("campaigns")
+        .select("raised, goal")
+        .eq("slug", "development-fund")
+        .single();
 
-    if (campaign) {
-      raised = Number(campaign.raised);
-      goal = Number(campaign.goal);
+      if (campaign) {
+        raised = Number(campaign.raised);
+        goal = Number(campaign.goal);
+      }
+    } catch {
+      // fallback defaults
     }
-  } catch {
-    // fallback defaults
   }
 
   return (

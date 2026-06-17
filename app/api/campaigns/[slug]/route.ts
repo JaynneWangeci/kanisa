@@ -7,6 +7,12 @@ export async function GET(
 ) {
   const { slug } = await params;
 
+  if (!supabase) {
+    return NextResponse.json(
+      { raised: 842500, goal: 5000000, recent_donations: [] },
+    );
+  }
+
   const { data: campaign, error: campaignError } = await supabase
     .from("campaigns")
     .select("*")

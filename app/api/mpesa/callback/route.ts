@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabaseService } from "@/lib/supabase";
+import { requireServiceSupabase } from "@/lib/supabase";
 
 function generateReceiptNumber(): string {
   const now = new Date();
@@ -13,6 +13,16 @@ function generateReceiptNumber(): string {
 export async function POST(request: NextRequest) {
   const body = await request.json();
 
+  let svc;
+  try {
+    svc = requireServiceSupabase();
+  } catch {
+    return NextResponse.json(
+      { error: "Database not configured" },
+      { status: 500 },
+    );
+  }
+
   const checkoutRequestID =
     body?.Body?.stkCallback?.CheckoutRequestID ||
     body?.CheckoutRequestID;
@@ -24,16 +34,16 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Missing CheckoutRequestID" }, { status: 400 });
   }
 
-  const { data: donation } = await supabaseService
+  const { data: donation } = await svc
     .from("donations")
-    .select("id, status")
+    .select("id, status, campaign_id")
     .eq("checkout_request_id", checkoutRequestID)
     .single();
 
   if (!donation) {
-    const { data: pendingDonation } = await supabaseService
+    const { data: pendingDonation } = await svc
       .from("donations")
-      .select("id, status")
+      .select("id, status, campaign_id, amount")
       .is("checkout_request_id", null)
       .eq("status", "pending")
       .order("created_at", { ascending: false })
@@ -44,43 +54,30 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Donation not found" }, { status: 404 });
     }
 
-    await supabaseService
+    await svc
       .from("donations")
       .update({ checkout_request_id: checkoutRequestID })
       .eq("id", pendingDonation.id);
 
     if (resultCode !== 0) {
-      await supabaseService
+      await svc
         .from("donations")
         .update({ status: "failed" })
         .eq("id", pendingDonation.id);
-
       return NextResponse.json({ message: "Payment failed", resultDesc });
     }
 
     const receipt = generateReceiptNumber();
-
-    const { data: updated } = await supabaseService
+    await svc
       .from("donations")
-      .update({
-        status: "completed",
-        receipt_number: receipt,
-      })
-      .eq("id", pendingDonation.id)
-      .select()
-      .single();
-
-    if (updated) {
-      await supabaseService.rpc("increment_campaign_raised", {
-        campaign_id: updated.campaign_id,
-        amount: updated.amount,
-      });
-    }
-
-    return NextResponse.json({
-      message: "Payment processed",
-      receipt_number: receipt,
+      .update({ status: "completed", receipt_number: receipt })
+      .eq("id", pendingDonation.id);
+    await svc.rpc("increment_campaign_raised", {
+      campaign_id: pendingDonation.campaign_id,
+      amount: pendingDonation.amount,
     });
+
+    return NextResponse.json({ message: "Payment processed", receipt_number: receipt });
   }
 
   if (donation.status !== "pending") {
@@ -88,35 +85,24 @@ export async function POST(request: NextRequest) {
   }
 
   if (resultCode !== 0) {
-    await supabaseService
-      .from("donations")
-      .update({ status: "failed" })
-      .eq("id", donation.id);
-
+    await svc.from("donations").update({ status: "failed" }).eq("id", donation.id);
     return NextResponse.json({ message: "Payment failed", resultDesc });
   }
 
   const receipt = generateReceiptNumber();
-
-  const { data: updated } = await supabaseService
+  const { data: completedDonation } = await svc
     .from("donations")
-    .update({
-      status: "completed",
-      receipt_number: receipt,
-    })
+    .update({ status: "completed", receipt_number: receipt })
     .eq("id", donation.id)
-    .select()
+    .select("campaign_id, amount")
     .single();
 
-  if (updated) {
-    await supabaseService.rpc("increment_campaign_raised", {
-      campaign_id: updated.campaign_id,
-      amount: updated.amount,
+  if (completedDonation) {
+    await svc.rpc("increment_campaign_raised", {
+      campaign_id: completedDonation.campaign_id,
+      amount: completedDonation.amount,
     });
   }
 
-  return NextResponse.json({
-    message: "Payment processed",
-    receipt_number: receipt,
-  });
+  return NextResponse.json({ message: "Payment processed", receipt_number: receipt });
 }

@@ -13,6 +13,10 @@ export async function GET(request: NextRequest) {
     );
   }
 
+  if (!supabase) {
+    return NextResponse.json({ status: "pending" });
+  }
+
   const { data, error } = await supabase
     .from("donations")
     .select("status, receipt_number, donor_name, amount")
