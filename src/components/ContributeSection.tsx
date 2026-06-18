@@ -21,7 +21,24 @@ function initials(name: string): string {
 }
 
 export default function ContributeSection() {
-  const [members, setMembers] = useState<Member[]>([]);
+  const seedMembers: Member[] = [
+    { id: '1', name: 'Dadson Mbogo', council: 'parish_board' },
+    { id: '2', name: 'Jeremiah Kimani', council: 'parish_board' },
+    { id: '3', name: 'Kariuki Nderitu', council: 'parish_board' },
+    { id: '4', name: 'Joseph Kamande', council: 'parish_board' },
+    { id: '5', name: 'Johnson Kamau', council: 'parish_board' },
+    { id: '6', name: 'George Kibia', council: 'parish_board' },
+    { id: '7', name: 'Magdalene Wageni', council: 'women_council' },
+    { id: '8', name: 'Alice Kuhunya', council: 'women_council' },
+    { id: '9', name: 'Tiffany Kimani', council: 'women_council' },
+    { id: '10', name: 'Esther Mbugua', council: 'women_council' },
+    { id: '11', name: 'Gilbert Wachira', council: 'men_council' },
+    { id: '12', name: "Sam Ndiang'ui", council: 'development' },
+    { id: '13', name: 'Wilson Thirikwa', council: 'development' },
+    { id: '14', name: 'Maria Goretti Njenga', council: 'development' },
+  ];
+
+  const [members, setMembers] = useState<Member[]>(seedMembers);
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);

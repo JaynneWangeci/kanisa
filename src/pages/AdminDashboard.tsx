@@ -18,6 +18,10 @@ export default function AdminDashboard() {
   const [newName, setNewName] = useState("");
   const [newCouncil, setNewCouncil] = useState("parish_board");
   const [memberError, setMemberError] = useState("");
+  const [bulkNames, setBulkNames] = useState("");
+  const [bulkCouncil, setBulkCouncil] = useState("parish_board");
+  const [bulkError, setBulkError] = useState("");
+  const [bulkResult, setBulkResult] = useState("");
   const exportRef = useRef<HTMLDivElement>(null);
 
   const token = localStorage.getItem("token");
@@ -111,6 +115,26 @@ export default function AdminDashboard() {
       setMemberError("");
       fetchMembers();
     } catch { setMemberError("Network error"); }
+  }
+
+  async function handleBulkAdd() {
+    const names = bulkNames.trim().split('\n').map(n => n.trim()).filter(Boolean);
+    if (!names.length) { setBulkError("Paste at least one name"); return; }
+    setBulkError(""); setBulkResult("");
+    let added = 0;
+    for (const name of names) {
+      try {
+        const res = await fetch("/api/members", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ name, council: bulkCouncil }),
+        });
+        if (res.ok) added++;
+      } catch {}
+    }
+    setBulkResult(`${added} of ${names.length} members added`);
+    setBulkNames("");
+    if (added > 0) fetchMembers();
   }
 
   async function deleteMember(id: string) {
@@ -315,7 +339,7 @@ export default function AdminDashboard() {
             <div className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm lg:col-span-1">
               <div className="mb-4 flex items-center gap-2">
                 <UserPlus size={16} className="text-nobuk" />
-                <h2 className="text-sm font-bold text-ink">Add Church Member</h2>
+                <h2 className="text-sm font-bold text-ink">Add Single Member</h2>
               </div>
               <form onSubmit={addMember} className="space-y-4">
                 {memberError && (
@@ -344,8 +368,48 @@ export default function AdminDashboard() {
               </form>
             </div>
 
+            {/* Bulk add */}
+            <div className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm lg:col-span-1">
+              <div className="mb-4 flex items-center gap-2">
+                <UserPlus size={16} className="text-nobuk" />
+                <h2 className="text-sm font-bold text-ink">Bulk Add Members</h2>
+              </div>
+              <div className="space-y-4">
+                <div>
+                  <label className="mb-1 block text-xs font-bold text-muted">Paste names (one per line)</label>
+                  <textarea
+                    value={bulkNames}
+                    onChange={(e) => setBulkNames(e.target.value)}
+                    placeholder="John Doe&#10;Jane Smith&#10;Mary Wanjiku"
+                    rows={6}
+                    className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm text-ink outline-none focus:border-nobuk resize-none"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-xs font-bold text-muted">Council for all</label>
+                  <select value={bulkCouncil} onChange={(e) => setBulkCouncil(e.target.value)}
+                    className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm text-ink outline-none focus:border-nobuk">
+                    <option value="parish_board">Parish Board</option>
+                    <option value="women_council">Women's Council</option>
+                    <option value="men_council">Men's Council</option>
+                    <option value="development">Development Committee</option>
+                  </select>
+                </div>
+                {bulkError && (
+                  <div className="rounded-lg border border-red-300 bg-red-50 px-3 py-2 text-xs text-red-700">{bulkError}</div>
+                )}
+                {bulkResult && (
+                  <div className="rounded-lg border border-green-300 bg-green-50 px-3 py-2 text-xs text-green-700">{bulkResult}</div>
+                )}
+                <button onClick={handleBulkAdd} disabled={!bulkNames.trim()}
+                  className="w-full rounded-lg bg-nobuk py-2.5 text-sm font-bold text-white hover:bg-nobuk-light disabled:opacity-40">
+                  Add {bulkNames.trim() ? bulkNames.trim().split('\n').filter(n => n.trim()).length : 0} Members
+                </button>
+              </div>
+            </div>
+
             {/* Members list */}
-            <div className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm lg:col-span-2">
+            <div className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm lg:col-span-3">
               <div className="mb-4 flex items-center gap-2">
                 <Users size={16} className="text-nobuk" />
                 <h2 className="text-sm font-bold text-ink">Church Members</h2>
