@@ -18,20 +18,20 @@ const councils = [
 ];
 
 const fallback: Member[] = [
-  { id: "1", name: "Dadson Mbogo", role: "Chairman", council: "parish_board" },
-  { id: "2", name: "Jeremiah Kimani", role: "Vice Chairman", council: "parish_board" },
+  { id: "1", name: "Dadson Mbogo", role: "Parish board chairman", council: "parish_board" },
+  { id: "2", name: "Jeremiah Kimani", role: "V Chairman", council: "parish_board" },
   { id: "3", name: "Kariuki Nderitu", role: "General Secretary", council: "parish_board" },
   { id: "4", name: "Joseph Kamande", role: "Vice General Secretary", council: "parish_board" },
   { id: "5", name: "Johnson Kamau", role: "Treasurer", council: "parish_board" },
   { id: "6", name: "George Kibia", role: "Vice Treasurer", council: "parish_board" },
   { id: "7", name: "Magdalene Wageni", role: "Chairlady", council: "women_council" },
-  { id: "8", name: "Alice Kuhunya", role: "Vice Chairlady", council: "women_council" },
-  { id: "9", name: "Tiffany Kimani", role: "Secretary", council: "women_council" },
-  { id: "10", name: "Esther Mbugua", role: "Treasurer", council: "women_council" },
-  { id: "11", name: "Gilbert Wachira", role: "Chairman", council: "men_council" },
-  { id: "12", name: "Sam Ndiang'ui", role: "Chairman", council: "development" },
-  { id: "13", name: "Wilson Thirikwa", role: "Secretary", council: "development" },
-  { id: "14", name: "Maria Goretti Njenga", role: "Treasurer", council: "development" },
+  { id: "8", name: "Alice Kuhunya", role: "V Chairlady", council: "women_council" },
+  { id: "9", name: "Tiffany Kimani", role: "Women council Secretary", council: "women_council" },
+  { id: "10", name: "Esther Mbugua", role: "Women council Treasurer", council: "women_council" },
+  { id: "11", name: "Gilbert Wachira", role: "Men council chairman", council: "men_council" },
+  { id: "12", name: "Sam Ndiang'ui", role: "Development chairman", council: "development" },
+  { id: "13", name: "Wilson Thirikwa", role: "Development Secretary", council: "development" },
+  { id: "14", name: "Maria goretti Njenga", role: "Development Treasurer", council: "development" },
 ];
 
 function initials(name: string): string {

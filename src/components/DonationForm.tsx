@@ -14,20 +14,20 @@ interface MemberOption {
 }
 
 const seedMembers: MemberOption[] = [
-  { id: "1", name: "Bishop Muita Njomo", role: "Bishop", council: "parish_board" },
-  { id: "2", name: "Pst. David Kimani", role: "Pastor", council: "parish_board" },
-  { id: "3", name: "Deacon Isaac Muiruri", role: "Deacon", council: "parish_board" },
-  { id: "4", name: "Deacon Macharia Mutuota", role: "Deacon", council: "parish_board" },
-  { id: "5", name: "Deacon Gathogo", role: "Deacon", council: "parish_board" },
-  { id: "6", name: "Mary Wanjiku", role: "Chairlady", council: "women_council" },
-  { id: "7", name: "Margaret Kemunto", role: "Secretary", council: "women_council" },
-  { id: "8", name: "Eunice Nyambura", role: "Treasurer", council: "women_council" },
-  { id: "9", name: "John Mwangi", role: "Chairman", council: "men_council" },
-  { id: "10", name: "Samuel Kamau", role: "Vice Chairman", council: "men_council" },
-  { id: "11", name: "Peter Njoroge", role: "Secretary", council: "men_council" },
-  { id: "12", name: "Daniel Chege", role: "Chairman", council: "development" },
-  { id: "13", name: "Patrick Muthomi", role: "Vice Chair", council: "development" },
-  { id: "14", name: "Jane Wanjeri", role: "Secretary", council: "development" },
+  { id: "1", name: "Dadson Mbogo", role: "Parish board chairman", council: "parish_board" },
+  { id: "2", name: "Jeremiah Kimani", role: "V Chairman", council: "parish_board" },
+  { id: "3", name: "Kariuki Nderitu", role: "General Secretary", council: "parish_board" },
+  { id: "4", name: "Joseph Kamande", role: "Vice General Secretary", council: "parish_board" },
+  { id: "5", name: "Johnson Kamau", role: "Treasurer", council: "parish_board" },
+  { id: "6", name: "George Kibia", role: "Vice Treasurer", council: "parish_board" },
+  { id: "7", name: "Magdalene Wageni", role: "Chairlady", council: "women_council" },
+  { id: "8", name: "Alice Kuhunya", role: "V Chairlady", council: "women_council" },
+  { id: "9", name: "Tiffany Kimani", role: "Women council Secretary", council: "women_council" },
+  { id: "10", name: "Esther Mbugua", role: "Women council Treasurer", council: "women_council" },
+  { id: "11", name: "Gilbert Wachira", role: "Men council chairman", council: "men_council" },
+  { id: "12", name: "Sam Ndiang'ui", role: "Development chairman", council: "development" },
+  { id: "13", name: "Wilson Thirikwa", role: "Development Secretary", council: "development" },
+  { id: "14", name: "Maria goretti Njenga", role: "Development Treasurer", council: "development" },
 ];
 
 function formatPhone(value: string): string {

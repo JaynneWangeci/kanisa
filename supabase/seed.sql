@@ -1,18 +1,18 @@
 insert into committee_members (name, role, council, "order") values
-  ('Dadson Mbogo', 'Parish Board Chairman', 'parish_board', 1),
-  ('Jeremiah Kimani', 'Vice Chairman', 'parish_board', 2),
+  ('Dadson Mbogo', 'Parish board chairman', 'parish_board', 1),
+  ('Jeremiah Kimani', 'V Chairman', 'parish_board', 2),
   ('Kariuki Nderitu', 'General Secretary', 'parish_board', 3),
   ('Joseph Kamande', 'Vice General Secretary', 'parish_board', 4),
   ('Johnson Kamau', 'Treasurer', 'parish_board', 5),
   ('George Kibia', 'Vice Treasurer', 'parish_board', 6),
   ('Magdalene Wageni', 'Chairlady', 'women_council', 7),
-  ('Alice Kuhunya', 'Vice Chairlady', 'women_council', 8),
-  ('Tiffany Kimani', 'Women Council Secretary', 'women_council', 9),
-  ('Esther Mbugua', 'Women Council Treasurer', 'women_council', 10),
-  ('Gilbert Wachira', 'Men Council Chairman', 'men_council', 11),
-  ('Sam Ndiang''ui', 'Development Chairman', 'development', 12),
+  ('Alice Kuhunya', 'V Chairlady', 'women_council', 8),
+  ('Tiffany Kimani', 'Women council Secretary', 'women_council', 9),
+  ('Esther Mbugua', 'Women council Treasurer', 'women_council', 10),
+  ('Gilbert Wachira', 'Men council chairman', 'men_council', 11),
+  ('Sam Ndiang''ui', 'Development chairman', 'development', 12),
   ('Wilson Thirikwa', 'Development Secretary', 'development', 13),
-  ('Maria Goretti Njenga', 'Development Treasurer', 'development', 14);
+  ('Maria goretti Njenga', 'Development Treasurer', 'development', 14);
 
 insert into campaigns (slug, title, description, goal, raised, currency, is_active)
 values (
