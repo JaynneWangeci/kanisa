@@ -23,7 +23,7 @@ export default function AboutSection() {
   const { ref, inView } = useInView();
 
   return (
-    <section id="about" className="scroll-mt-16 bg-cream px-4 py-24 md:py-32">
+    <section id="about" className="scroll-mt-16 bg-white/10 backdrop-blur-sm px-4 py-24 md:py-32">
       <div className="mx-auto max-w-6xl">
         <div className="mx-auto mb-16 max-w-xl text-center">
           <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-light px-4 py-1.5 text-xs font-bold text-amber-dark uppercase tracking-widest">
@@ -44,7 +44,7 @@ export default function AboutSection() {
             return (
               <div
                 key={card.title}
-                className={`card-hover group rounded-2xl border border-gray-200 bg-white p-8 shadow-sm ${
+                className={`card-hover group rounded-2xl border border-white/20 bg-white/80 backdrop-blur-md p-8 shadow-sm ${
                   inView ? "animate-slide-up" : "opacity-0"
                 }`}
                 style={{ animationDelay: `${i * 0.15}s` }}

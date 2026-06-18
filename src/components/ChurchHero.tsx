@@ -1,36 +1,8 @@
 import { useState, useEffect } from 'react';
-import { Heart, Menu, X, Play, MapPin } from 'lucide-react';
-
-const HERO_IMAGES = [
-  '/images/frame_01.jpg',
-  '/images/frame_04.jpg',
-  '/images/frame_23.jpg',
-  '/images/frame_31.jpg',
-  '/images/frame_58.jpg',
-  '/images/church-opening.jpg',
-];
+import { Heart, Menu, X, MapPin } from 'lucide-react';
 
 export default function ChurchHero() {
   const [menuOpen, setMenuOpen] = useState(false);
-  const [loaded, setLoaded] = useState<boolean[]>(HERO_IMAGES.map(() => false));
-  const [currentImg, setCurrentImg] = useState(0);
-
-  useEffect(() => {
-    HERO_IMAGES.forEach((src, i) => {
-      const img = new Image();
-      img.src = src;
-      img.onload = () => setLoaded(prev => { const n = [...prev]; n[i] = true; return n; });
-    });
-  }, []);
-
-  useEffect(() => {
-    if (loaded.every(Boolean)) {
-      const interval = setInterval(() => {
-        setCurrentImg(prev => (prev + 1) % HERO_IMAGES.length);
-      }, 6000);
-      return () => clearInterval(interval);
-    }
-  }, [loaded]);
 
   useEffect(() => {
     if (menuOpen) {
@@ -48,26 +20,9 @@ export default function ChurchHero() {
   ];
 
   return (
-    <section className="relative w-full min-h-screen sm:h-screen overflow-hidden">
-      {/* Background image slideshow */}
-      {HERO_IMAGES.map((src, i) => (
-        <div
-          key={src}
-          className={`absolute inset-0 bg-cover bg-center transition-all duration-1000 ${i === currentImg ? 'opacity-100' : 'opacity-0'}`}
-          style={{ backgroundImage: `url(${src})`, backgroundSize: 'cover' }}
-        >
-          <div className="absolute inset-0 animate-ken-burns" style={{ backgroundImage: `url(${src})`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
-        </div>
-      ))}
-      <div className="absolute inset-0 bg-gradient-to-b from-[#1f2a1d]/70 via-[#1f2a1d]/40 to-[#1f2a1d]/80" />
-      <div className="absolute inset-0 bg-gradient-to-r from-[#1f2a1d]/30 to-transparent" />
-
-      {/* Ambient glow */}
-      <div className="absolute top-20 right-10 h-72 w-72 rounded-full bg-[#85AB8B]/10 blur-3xl" />
-      <div className="absolute bottom-20 left-10 h-96 w-96 rounded-full bg-[#85AB8B]/5 blur-3xl" />
-
+    <>
       {/* Navigation */}
-      <nav className="absolute top-0 left-0 right-0 z-30 flex items-center justify-between px-4 sm:px-6 md:px-10 py-4 sm:py-6">
+      <nav className="relative z-30 flex items-center justify-between px-4 sm:px-6 md:px-10 py-4 sm:py-6">
         <div className="flex items-center gap-2 text-white/95">
           <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#85AB8B]/20 backdrop-blur-sm border border-white/20">
             <img src="/images/a.jpeg" alt="AIPCA" className="h-8 w-8 rounded-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
@@ -166,8 +121,8 @@ export default function ChurchHero() {
         </div>
       </div>
 
-      {/* Hero copy */}
-      <div className="relative z-10 flex flex-col items-center text-center pt-24 sm:pt-28 md:pt-32 px-4 sm:px-6">
+      {/* Hero content */}
+      <div className="relative z-10 flex flex-col items-center text-center pt-12 sm:pt-16 md:pt-20 px-4 sm:px-6 pb-8">
         <div className="animate-fade-in">
           <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 backdrop-blur-sm px-4 py-1.5 text-xs font-semibold tracking-widest text-[#85AB8B] uppercase border border-white/10">
             <Heart size={12} />
@@ -191,44 +146,21 @@ export default function ChurchHero() {
         </p>
       </div>
 
-      {/* Bottom-left CTA block */}
-      <div className="absolute left-4 right-4 sm:right-auto sm:left-6 md:left-10 bottom-6 sm:bottom-8 md:bottom-10 z-10 max-w-sm">
-        <div className="flex items-center gap-2 text-white/90 mb-3">
-          <Heart className="w-4 h-4 text-[#85AB8B]" />
-          <span className="text-sm font-semibold">
-            Bahati Harambee<sup className="text-[10px]">®</sup>
-          </span>
-        </div>
-        <p className="text-white/70 text-xs leading-relaxed mb-6 max-w-xs font-medium">
-          Join us in completing this Great House of God &mdash; sanctuary, fellowship hall, and ministry grounds.
-        </p>
-        <div className="flex items-center gap-4 flex-wrap">
-          <a
-            href="#contribute"
-            className="bg-white hover:bg-white/90 text-[#1f2a1d] text-sm font-semibold px-5 sm:px-6 py-2.5 sm:py-3 rounded-full transition-colors shadow-sm"
-          >
-            Give to the Harambee
-          </a>
-          <a
-            href="#location"
-            className="text-white/80 text-sm font-semibold hover:text-white transition-opacity"
-          >
-            Visit Us.
-          </a>
-        </div>
-      </div>
-
-      {/* Bottom-right video link */}
-      <div className="hidden sm:flex absolute right-6 md:right-10 bottom-8 md:bottom-10 z-10 items-center gap-2 text-white/80 text-sm">
+      {/* Bottom CTA */}
+      <div className="relative z-10 flex flex-col sm:flex-row items-center justify-center gap-4 px-4 pb-8">
         <a
-          href="#about"
-          className="flex items-center justify-center w-6 h-6 rounded-full bg-white/15 backdrop-blur-sm hover:bg-white/25 transition-colors"
+          href="#contribute"
+          className="bg-white hover:bg-white/90 text-[#1f2a1d] text-sm font-semibold px-5 sm:px-6 py-2.5 sm:py-3 rounded-full transition-colors shadow-sm"
         >
-          <MapPin className="w-3 h-3" />
+          Give to the Harambee
         </a>
-        <span className="font-medium">About</span>
-        <span className="text-white/40">the vision</span>
+        <a
+          href="#location"
+          className="text-white/80 text-sm font-semibold hover:text-white transition-opacity"
+        >
+          Visit Us.
+        </a>
       </div>
-    </section>
+    </>
   );
 }

@@ -2,7 +2,7 @@ import { Heart, Church, Shield } from "lucide-react";
 
 export default function Footer() {
   return (
-    <footer className="bg-nobuk px-4 py-16">
+    <footer className="bg-[#1f2a1d]/80 backdrop-blur-sm px-4 py-16">
       <div className="mx-auto max-w-6xl">
         <div className="flex flex-col items-center justify-between gap-8 md:flex-row">
           <div className="text-center md:text-left">

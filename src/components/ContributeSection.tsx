@@ -63,7 +63,7 @@ export default function ContributeSection() {
 
   return (
     <>
-      <section id="contribute" className="scroll-mt-16 bg-white px-4 py-24 md:py-32">
+      <section id="contribute" className="scroll-mt-16 bg-white/10 backdrop-blur-sm px-4 py-24 md:py-32">
         <div className="mx-auto max-w-6xl">
           <div className="mx-auto mb-12 max-w-xl text-center">
             <span className="inline-flex items-center gap-1.5 rounded-full bg-[#85AB8B]/10 px-4 py-1.5 text-xs font-bold text-[#336443] uppercase tracking-widest">
@@ -113,7 +113,7 @@ export default function ContributeSection() {
                       <button
                         key={member.id}
                         onClick={() => setSelectedMember(member)}
-                        className={`group relative overflow-hidden rounded-2xl border border-[#2d3a2a]/10 bg-white p-5 shadow-sm text-left transition-all duration-300 hover:border-[#336443]/30 hover:shadow-lg hover:-translate-y-1 ${
+                        className={`group relative overflow-hidden rounded-2xl border border-white/20 bg-white/80 backdrop-blur-md p-5 shadow-sm text-left transition-all duration-300 hover:border-[#336443]/30 hover:shadow-lg hover:-translate-y-1 ${
                           inView ? 'animate-slide-up' : 'opacity-0'
                         }`}
                         style={{ animationDelay: `${gi * 0.1 + mi * 0.05}s` }}
@@ -149,7 +149,7 @@ export default function ContributeSection() {
 
           {/* General fund CTA */}
           <div className={`mt-16 text-center ${inView ? 'animate-fade-in' : 'opacity-0'}`} style={{ animationDelay: '0.5s' }}>
-            <div className="mx-auto max-w-lg rounded-2xl border border-[#2d3a2a]/10 bg-[#85AB8B]/5 p-8 shadow-sm">
+            <div className="mx-auto max-w-lg rounded-2xl border border-white/20 bg-white/70 backdrop-blur-md p-8 shadow-sm">
               <Heart size={24} className="mx-auto mb-3 text-[#336443]" />
               <h3 className="text-xl font-bold text-[#1f2a1d]">Give to the General Fund</h3>
               <p className="mt-1 text-sm text-[#4b5b47]">Support the Harambee without naming a specific member.</p>

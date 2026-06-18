@@ -10,7 +10,7 @@ export default function LocationMap() {
   const { ref, inView } = useInView();
 
   return (
-    <section id="location" className="scroll-mt-16 bg-cream px-4 py-24 md:py-32">
+    <section id="location" className="scroll-mt-16 bg-white/10 backdrop-blur-sm px-4 py-24 md:py-32">
       <div className="mx-auto max-w-3xl">
         <div ref={ref} className={`text-center ${inView ? "animate-slide-up" : "opacity-0"}`}>
           <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-light px-4 py-1.5 text-xs font-bold text-amber-dark uppercase tracking-widest">
@@ -25,7 +25,7 @@ export default function LocationMap() {
           </p>
         </div>
 
-        <div className={`mt-8 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-all duration-500 ${
+        <div className={`mt-8 overflow-hidden rounded-2xl border border-white/20 bg-white/80 backdrop-blur-md shadow-sm transition-all duration-500 ${
           inView ? "animate-slide-up" : "opacity-0"
         }`} style={{ animationDelay: "0.2s" }}>
           <div className="group relative aspect-video w-full bg-gray-100 overflow-hidden">
