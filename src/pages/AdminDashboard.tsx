@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   TrendingUp, Users, DollarSign, Clock, AlertCircle,
@@ -12,6 +12,8 @@ export default function AdminDashboard() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [logs, setLogs] = useState<unknown[]>([]);
   const [loading, setLoading] = useState(true);
+  const [exportOpen, setExportOpen] = useState(false);
+  const exportRef = useRef<HTMLDivElement>(null);
 
   const token = localStorage.getItem("token");
 
@@ -52,6 +54,32 @@ export default function AdminDashboard() {
     fetchStats();
     fetchLogs();
   }, [admin, fetchStats, fetchLogs]);
+
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (exportRef.current && !exportRef.current.contains(e.target as Node)) {
+        setExportOpen(false);
+      }
+    }
+    if (exportOpen) document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [exportOpen]);
+
+  async function downloadExport(format: string) {
+    const token = localStorage.getItem("token");
+    const url = format === "csv" ? "/api/ledger/export" : `/api/export/${format}`;
+    try {
+      const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
+      if (!res.ok) return;
+      const blob = await res.blob();
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = `harambee-report.${format}`;
+      a.click();
+      URL.revokeObjectURL(a.href);
+    } catch {}
+    setExportOpen(false);
+  }
 
   function handleLogout() {
     localStorage.removeItem("token");
@@ -133,9 +161,24 @@ export default function AdminDashboard() {
           <div className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
             <div className="mb-4 flex items-center justify-between">
               <h2 className="text-sm font-bold text-ink">Recent Donations</h2>
-              <a href="/api/ledger/export" className="flex items-center gap-1 text-xs text-muted hover:text-nobuk">
-                <Download size={12} /> Export
-              </a>
+              <div className="relative" ref={exportRef}>
+                <button onClick={() => setExportOpen(!exportOpen)} className="flex items-center gap-1 text-xs text-muted hover:text-nobuk">
+                  <Download size={12} /> Export
+                </button>
+                {exportOpen && (
+                  <div className="absolute right-0 top-full z-50 mt-1 w-36 rounded-lg border border-gray-100 bg-white py-1 shadow-lg">
+                    <button onClick={() => downloadExport("csv")} className="flex w-full items-center gap-2 px-3 py-2 text-xs text-ink hover:bg-cream">
+                      <Download size={14} /> CSV
+                    </button>
+                    <button onClick={() => downloadExport("pptx")} className="flex w-full items-center gap-2 px-3 py-2 text-xs text-ink hover:bg-cream">
+                      <Download size={14} /> PowerPoint
+                    </button>
+                    <button onClick={() => downloadExport("docx")} className="flex w-full items-center gap-2 px-3 py-2 text-xs text-ink hover:bg-cream">
+                      <Download size={14} /> Word
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
             {stats?.recent_donations?.length ? (
               <div className="space-y-2">

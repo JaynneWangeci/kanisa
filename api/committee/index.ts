@@ -1,4 +1,5 @@
 import { requireDb } from "../_supabase.js";
+import { getAdmin, logAudit } from "../_admin.js";
 
 const fallback = [
   { id: "1", name: "Dadson Mbogo", role: "Parish board chairman", council: "parish_board" },
@@ -18,11 +19,23 @@ const fallback = [
 ];
 
 export default async function handler(req: any, res: any) {
-  if (req.method !== "GET") {
-    res.status(405).json({ error: "Method not allowed" });
+  if (req.method === "OPTIONS") {
+    res.status(200).end();
     return;
   }
 
+  if (req.method === "GET") {
+    return handleGet(req, res);
+  }
+
+  if (req.method === "POST") {
+    return handlePost(req, res);
+  }
+
+  res.status(405).json({ error: "Method not allowed" });
+}
+
+async function handleGet(req: any, res: any) {
   try {
     const db = requireDb();
 
@@ -45,5 +58,37 @@ export default async function handler(req: any, res: any) {
     res.json({ members: data });
   } catch {
     res.json({ members: fallback });
+  }
+}
+
+async function handlePost(req: any, res: any) {
+  const admin = getAdmin(req);
+  if (!admin) return res.status(401).json({ error: "Missing or invalid token" });
+  if (admin.role === "viewer") return res.status(403).json({ error: "Insufficient permissions" });
+
+  try {
+    const db = requireDb();
+    const { name, role, council, photo_url, order } = req.body;
+    if (!name || !role || !council) return res.status(400).json({ error: "name, role, council required" });
+
+    const { data, error } = await db
+      .from("committee_members")
+      .insert({ name, role, council, photo_url, order: order || 0 })
+      .select()
+      .single();
+
+    if (error) return res.status(500).json({ error: error.message });
+
+    await logAudit({
+      adminId: admin.id,
+      action: "create_committee",
+      resourceType: "committee_member",
+      resourceId: data.id,
+    });
+
+    res.status(201).json({ member: data });
+  } catch (err: any) {
+    console.error("committee create error:", err);
+    res.status(500).json({ error: err.message || "Server error" });
   }
 }

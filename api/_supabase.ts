@@ -1,24 +1,20 @@
 import { createClient } from "@supabase/supabase-js";
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
-const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
+let _supabase: ReturnType<typeof createClient> | null = null;
+let _serviceClient: ReturnType<typeof createClient> | null = null;
 
-function safeClient() {
-  if (!supabaseUrl || !supabaseAnonKey) return null;
-  return createClient(supabaseUrl, supabaseAnonKey);
+function ensureClients() {
+  if (_supabase || _serviceClient) return;
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (url && anonKey) _supabase = createClient(url, anonKey);
+  if (url && serviceKey) _serviceClient = createClient(url, serviceKey, { auth: { persistSession: false } });
 }
-
-function safeServiceClient() {
-  if (!supabaseUrl || !serviceRoleKey) return null;
-  return createClient(supabaseUrl, serviceRoleKey, { auth: { persistSession: false } });
-}
-
-export const supabase = safeClient();
-export const supabaseService = safeServiceClient();
 
 export function requireDb() {
-  const db = supabaseService || supabase;
+  ensureClients();
+  const db = _serviceClient || _supabase;
   if (!db) throw new Error("Supabase not configured");
   return db;
 }
