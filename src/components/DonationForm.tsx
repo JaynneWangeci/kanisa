@@ -114,9 +114,9 @@ export default function DonationForm() {
           setError("Payment failed. Please try again.");
           setStep("form");
         }
-      } catch {
+      } catch (err: any) {
         clearInterval(interval);
-        setError("Network error. Please try again.");
+        setError(err?.message || "Network error. Please try again.");
         setStep("form");
       }
     }, 3000);
@@ -190,7 +190,7 @@ export default function DonationForm() {
       if (!mpesaRes.ok || !mpesaData.CheckoutRequestID) { setError(mpesaData.error || "M-Pesa failed"); setStep("form"); return; }
 
       pollStatus(mpesaData.CheckoutRequestID);
-    } catch { setError("Network error. Please try again."); setStep("form"); }
+    } catch (err: any) { setError(err?.message || "Network error. Please try again."); setStep("form"); }
   }
 
   function handleGeneralSubmit(e: React.FormEvent) {
