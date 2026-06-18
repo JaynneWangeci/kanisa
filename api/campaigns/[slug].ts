@@ -1,11 +1,10 @@
 import { requireDb } from "../_supabase.js";
 
-const fallback = {
+const FALLBACK = {
   id: "dev-fund",
   slug: "development-fund",
   title: "AIPCA Bahati Cathedral Development Fund",
-  description:
-    "Tujenge pamoja – Building our house of worship together. Support the sanctuary improvements, fellowship hall, ministry growth, and grounds maintenance.",
+  description: "Tujenge pamoja – Building our house of worship together. Support the sanctuary improvements, fellowship hall, ministry growth, and grounds maintenance.",
   goal: 5000000,
   raised: 842500,
   currency: "KES",
@@ -14,19 +13,12 @@ const fallback = {
 
 export default async function handler(req: any, res: any) {
   if (req.method !== "GET") {
-    res.status(405).json({ error: "Method not allowed" });
-    return;
+    return res.status(405).json({ error: "Method not allowed" });
   }
 
   try {
     const slug = req.query.slug;
     const db = requireDb();
-
-    if (!db) {
-      res.json(fallback);
-      return;
-    }
-
     const { data, error } = await db
       .from("campaigns")
       .select("*")
@@ -34,12 +26,11 @@ export default async function handler(req: any, res: any) {
       .maybeSingle();
 
     if (error || !data) {
-      res.json(fallback);
-      return;
+      return res.json(FALLBACK);
     }
 
     res.json(data);
   } catch {
-    res.json(fallback);
+    res.json(FALLBACK);
   }
 }
