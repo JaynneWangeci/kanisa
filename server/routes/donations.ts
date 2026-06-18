@@ -27,7 +27,7 @@ donationsRouter.get("/", async (req, res) => {
 donationsRouter.post("/", async (req, res) => {
   try {
     const db = requireService();
-    const { campaign_id, donor_name, amount, phone, honored_member_id, message } = req.body;
+    const { campaign_id, donor_name, amount, phone, honored_member_id, church_member_id, message } = req.body;
 
     if (!campaign_id || !amount || !phone) {
       return res.status(400).json({ error: "campaign_id, amount, and phone required" });
@@ -47,6 +47,7 @@ donationsRouter.post("/", async (req, res) => {
         status: "pending",
         phone: normalizedPhone,
         honored_member_id: honored_member_id || null,
+        church_member_id: church_member_id || null,
         message: message || null,
       })
       .select()
@@ -76,7 +77,14 @@ donationsRouter.patch("/:id/status", requireAdmin, async (req, res) => {
     if (error) return res.status(500).json({ error: error.message });
 
     const admin = (req as any).admin;
-    await logAudit({ adminId: admin.id, action: "view_donation", resourceType: "donation", resourceId: data.id });
+    await logAudit({
+      adminId: admin.id,
+      action: "update_donation",
+      resourceType: "donation",
+      resourceId: data.id,
+      details: { status },
+      ipAddress: (req as any).adminIp,
+    });
 
     res.json({ donation: data });
   } catch (err) {

@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { requireService } from "../lib/supabase.js";
-import { verifyPassword, signToken, verifyToken, logAudit, requireAdmin } from "../lib/admin.js";
+import { verifyPassword, signToken, verifyToken, logAudit, requireAdmin, getClientIp } from "../lib/admin.js";
 
 export const authRouter = Router();
 
@@ -16,17 +16,26 @@ authRouter.post("/login", async (req, res) => {
       .eq("email", email.toLowerCase().trim())
       .single();
 
+    const ip = getClientIp(req);
+
     if (error || !user || !verifyPassword(password, user.password_hash)) {
+      if (user) {
+        await logAudit({
+          adminId: user.id,
+          action: "failed_login",
+          ipAddress: ip,
+          details: { email: email.toLowerCase().trim() },
+        });
+      }
       return res.status(401).json({ error: "Invalid credentials" });
     }
 
     const token = signToken({ id: user.id, email: user.email, role: user.role });
-    const ip = req.ip || req.socket.remoteAddress || null;
 
     await logAudit({
       adminId: user.id,
       action: "login",
-      ipAddress: ip?.replace(/^::ffff:/, ""),
+      ipAddress: ip,
     });
 
     res.json({ token, admin: { id: user.id, email: user.email, name: user.name, role: user.role } });
@@ -51,11 +60,10 @@ authRouter.get("/me", requireAdmin, async (req, res) => {
 authRouter.post("/logout", requireAdmin, async (req, res) => {
   try {
     const admin = (req as any).admin;
-    const ip = req.ip || req.socket.remoteAddress || null;
     await logAudit({
       adminId: admin.id,
       action: "logout",
-      ipAddress: ip?.replace(/^::ffff:/, ""),
+      ipAddress: (req as any).adminIp,
     });
     res.json({ ok: true });
   } catch {

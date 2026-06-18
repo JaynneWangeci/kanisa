@@ -8,6 +8,8 @@ import { donationsRouter } from "./routes/donations.js";
 import { adminRouter } from "./routes/admin.js";
 import { mpesaRouter } from "./routes/mpesa.js";
 import { ledgerRouter } from "./routes/ledger.js";
+import { membersRouter } from "./routes/members.js";
+import { rateLimit } from "./lib/admin.js";
 
 if (!process.env.VERCEL) {
   dotenv.config({ path: ".env.local" });
@@ -23,9 +25,10 @@ app.use("/api/auth", authRouter);
 app.use("/api/campaigns", campaignsRouter);
 app.use("/api/committee", committeeRouter);
 app.use("/api/donations", donationsRouter);
-app.use("/api/admin", adminRouter);
+app.use("/api/admin", rateLimit, adminRouter);
 app.use("/api/mpesa", mpesaRouter);
-app.use("/api/ledger", ledgerRouter);
+app.use("/api/ledger", rateLimit, ledgerRouter);
+app.use("/api/members", membersRouter);
 
 app.get("/api/health", (_req, res) => res.json({ ok: true }));
 

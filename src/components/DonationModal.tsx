@@ -8,9 +8,7 @@ const presets = [500, 1000, 2500, 5000, 10000];
 interface Member {
   id: string;
   name: string;
-  role: string;
-  council: string;
-  photo_url: string | null;
+  council?: string;
 }
 
 function formatPhone(value: string): string {
@@ -90,7 +88,8 @@ export default function DonationModal({ member, onClose }: Props) {
           amount: amt,
           phone: cleanPhone,
           message: message || null,
-          honored_member_id: isGeneral ? null : member.id,
+          honored_member_id: null,
+          church_member_id: isGeneral ? null : member.id,
         }),
       });
       const donData = await donRes.json();
@@ -103,7 +102,7 @@ export default function DonationModal({ member, onClose }: Props) {
           phone: cleanPhone,
           amount: amt,
           donation_id: donData.donation.id,
-          account_reference: 'Harambee',
+          account_reference: name || 'Harambee',
           transaction_desc: isGeneral ? 'General Donation' : `Honour: ${member.name}`,
         }),
       });
@@ -134,7 +133,6 @@ export default function DonationModal({ member, onClose }: Props) {
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
       <div className="absolute inset-0 bg-[#1f2a1d]/60 backdrop-blur-sm" onClick={onClose} />
       <div className="relative z-10 w-full max-w-lg rounded-t-2xl sm:rounded-2xl bg-white shadow-2xl max-h-[90vh] overflow-y-auto">
-        {/* Header */}
         <div className="sticky top-0 z-10 flex items-center justify-between border-b border-[#2d3a2a]/10 bg-white px-6 py-4">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#85AB8B]/20 text-sm font-bold text-[#336443]">
@@ -142,7 +140,6 @@ export default function DonationModal({ member, onClose }: Props) {
             </div>
             <div>
               <p className="text-sm font-bold text-[#1f2a1d]">{isGeneral ? 'General Harambee Fund' : member.name}</p>
-              {!isGeneral && <p className="text-xs text-[#4b5b47]">{member.role}</p>}
             </div>
           </div>
           <button onClick={onClose} className="flex h-8 w-8 items-center justify-center rounded-full hover:bg-[#2d3a2a]/10 transition-colors">
@@ -159,7 +156,6 @@ export default function DonationModal({ member, onClose }: Props) {
                 </div>
               )}
 
-              {/* Amount */}
               <div>
                 <label className="mb-2 block text-sm font-bold text-[#1f2a1d]">Amount (KES)</label>
                 <div className="grid grid-cols-5 gap-2">
@@ -185,7 +181,6 @@ export default function DonationModal({ member, onClose }: Props) {
                 />
               </div>
 
-              {/* Name */}
               <div>
                 <label className="mb-1.5 flex items-center gap-1.5 text-sm font-bold text-[#1f2a1d]">
                   <User size={14} className="text-[#85AB8B]" /> Your name <span className="font-normal text-[#4b5b47]">(optional)</span>
@@ -199,7 +194,6 @@ export default function DonationModal({ member, onClose }: Props) {
                 />
               </div>
 
-              {/* Phone */}
               <div>
                 <label className="mb-1.5 flex items-center gap-1.5 text-sm font-bold text-[#1f2a1d]">
                   <Phone size={14} className="text-[#85AB8B]" /> M-Pesa number
@@ -214,7 +208,6 @@ export default function DonationModal({ member, onClose }: Props) {
                 <p className="mt-1 text-xs text-[#4b5b47]">You will receive an M-Pesa prompt to enter your PIN</p>
               </div>
 
-              {/* Message */}
               <div>
                 <label className="mb-1.5 flex items-center gap-1.5 text-sm font-bold text-[#1f2a1d]">
                   <MessageSquare size={14} className="text-[#85AB8B]" /> Message <span className="font-normal text-[#4b5b47]">(optional)</span>
@@ -241,10 +234,10 @@ export default function DonationModal({ member, onClose }: Props) {
 
               <div className="rounded-xl border border-[#2d3a2a]/10 bg-[#85AB8B]/5 p-4 text-center">
                 <p className="text-xs font-bold text-[#336443] uppercase tracking-wider">Or pay directly via M-Pesa Paybill</p>
-                <p className="mt-1 text-3xl font-bold tracking-tight text-[#1f2a1d]">247 247</p>
+                <p className="mt-1 text-3xl font-bold tracking-tight text-[#1f2a1d]">835 872</p>
                 <div className="mx-auto mt-1 inline-flex items-center gap-1 rounded-full bg-[#85AB8B]/10 px-4 py-1.5">
                   <span className="text-xs text-[#4b5b47]">Account:</span>
-                  <span className="text-xs font-bold text-[#1f2a1d]">Harambee</span>
+                  <span className="text-xs font-bold text-[#1f2a1d]">Your Name</span>
                 </div>
               </div>
             </div>

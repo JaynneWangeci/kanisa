@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback } from "react";
-import { Check, Loader2, Share2, ChevronDown, Search, Phone, User, MessageSquare, Heart, Medal } from "lucide-react";
+import { useState, useEffect, useCallback, useRef } from "react";
+import { Check, Loader2, Share2, ChevronDown, Search, Phone, User, MessageSquare, Heart, Medal, Church, Users } from "lucide-react";
 import { useInView } from "../hooks/useInView";
 
 type Tab = "general" | "honour";
@@ -9,26 +9,17 @@ const presets = [500, 1000, 2500, 5000, 10000];
 interface MemberOption {
   id: string;
   name: string;
-  role: string;
   council: string;
 }
 
-const seedMembers: MemberOption[] = [
-  { id: "1", name: "Dadson Mbogo", role: "Parish board chairman", council: "parish_board" },
-  { id: "2", name: "Jeremiah Kimani", role: "V Chairman", council: "parish_board" },
-  { id: "3", name: "Kariuki Nderitu", role: "General Secretary", council: "parish_board" },
-  { id: "4", name: "Joseph Kamande", role: "Vice General Secretary", council: "parish_board" },
-  { id: "5", name: "Johnson Kamau", role: "Treasurer", council: "parish_board" },
-  { id: "6", name: "George Kibia", role: "Vice Treasurer", council: "parish_board" },
-  { id: "7", name: "Magdalene Wageni", role: "Chairlady", council: "women_council" },
-  { id: "8", name: "Alice Kuhunya", role: "V Chairlady", council: "women_council" },
-  { id: "9", name: "Tiffany Kimani", role: "Women council Secretary", council: "women_council" },
-  { id: "10", name: "Esther Mbugua", role: "Women council Treasurer", council: "women_council" },
-  { id: "11", name: "Gilbert Wachira", role: "Men council chairman", council: "men_council" },
-  { id: "12", name: "Sam Ndiang'ui", role: "Development chairman", council: "development" },
-  { id: "13", name: "Wilson Thirikwa", role: "Development Secretary", council: "development" },
-  { id: "14", name: "Maria goretti Njenga", role: "Development Treasurer", council: "development" },
-];
+const councilMeta: Record<string, { label: string; icon: typeof Church }> = {
+  parish_board: { label: "Parish Board", icon: Church },
+  women_council: { label: "Women's Council", icon: Users },
+  men_council: { label: "Men's Council", icon: Users },
+  development: { label: "Development Committee", icon: Medal },
+};
+
+const councilOrder = ["parish_board", "women_council", "men_council", "development"];
 
 function formatPhone(value: string): string {
   const digits = value.replace(/\D/g, "").slice(0, 10);
@@ -45,23 +36,22 @@ export default function DonationForm() {
   const [tab, setTab] = useState<Tab>("general");
   const [step, setStep] = useState<Step>("form");
 
-  // General donation fields
   const [genAmount, setGenAmount] = useState<number | "custom" | null>(null);
   const [genCustom, setGenCustom] = useState("");
   const [genName, setGenName] = useState("");
   const [genPhone, setGenPhone] = useState("");
   const [genMessage, setGenMessage] = useState("");
 
-  // Honour donation fields
   const [honAmount, setHonAmount] = useState<number | "custom" | null>(null);
   const [honCustom, setHonCustom] = useState("");
   const [honName, setHonName] = useState("");
   const [honPhone, setHonPhone] = useState("");
   const [honMessage, setHonMessage] = useState("");
   const [honoredMember, setHonoredMember] = useState("");
-  const [members, setMembers] = useState<MemberOption[]>(seedMembers);
+  const [members, setMembers] = useState<MemberOption[]>([]);
   const [memberSearch, setMemberSearch] = useState("");
   const [memberOpen, setMemberOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   const [receiptNumber, setReceiptNumber] = useState("");
   const [donationId, setDonationId] = useState("");
@@ -74,20 +64,33 @@ export default function DonationForm() {
   const selectedMember = members.find((m) => m.id === honoredMember);
 
   const filteredMembers = memberSearch
-    ? members.filter(
-        (m) =>
-          m.name.toLowerCase().includes(memberSearch.toLowerCase()) ||
-          m.role.toLowerCase().includes(memberSearch.toLowerCase()),
+    ? members.filter((m) =>
+        m.name.toLowerCase().includes(memberSearch.toLowerCase())
       )
     : members;
 
+  const groupedMembers = filteredMembers.reduce((acc, m) => {
+    (acc[m.council] = acc[m.council] || []).push(m);
+    return acc;
+  }, {} as Record<string, MemberOption[]>);
+
   useEffect(() => {
-    fetch("/api/committee")
+    fetch("/api/members")
       .then((r) => r.ok && r.json())
       .then((data) => {
         if (data?.members?.length) setMembers(data.members);
       })
       .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setMemberOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
   useEffect(() => {
@@ -167,7 +170,8 @@ export default function DonationForm() {
           amount: params.amount,
           phone: params.phone.replace(/\s/g, ""),
           message: params.message || null,
-          honored_member_id: params.honoredMemberId || null,
+          honored_member_id: null,
+          church_member_id: params.honoredMemberId || null,
         }),
       });
       const donData = await donRes.json();
@@ -182,7 +186,7 @@ export default function DonationForm() {
           phone: params.phone.replace(/\s/g, ""),
           amount: params.amount,
           donation_id: donData.donation.id,
-          account_reference: "Harambee",
+          account_reference: params.donorName || "Harambee",
           transaction_desc: params.honoredMemberId ? "Honour Donation" : "General Donation",
         }),
       });
@@ -319,10 +323,10 @@ export default function DonationForm() {
 
                 <div className="rounded-2xl border-2 border-gray-200 bg-white p-5 text-center shadow-sm">
                   <p className="text-xs font-bold text-muted uppercase tracking-wider">Or pay directly via M-Pesa Paybill</p>
-                  <p className="mt-2 text-3xl font-bold tracking-tight text-nobuk">247 247</p>
+                  <p className="mt-2 text-3xl font-bold tracking-tight text-nobuk">835 872</p>
                   <div className="mx-auto mt-1 inline-flex items-center gap-1 rounded-full bg-nobuk-muted px-4 py-1.5">
                     <span className="text-xs text-muted">Account:</span>
-                    <span className="text-xs font-bold text-nobuk">Harambee</span>
+                    <span className="text-xs font-bold text-nobuk">Your Name</span>
                   </div>
                 </div>
               </form>
@@ -335,7 +339,7 @@ export default function DonationForm() {
                     <Medal size={16} className="text-amber" />
                     Select Member to Honour <span className="text-red-500">*</span>
                   </label>
-                  <div className="relative">
+                  <div ref={dropdownRef}>
                     <button type="button" onClick={() => setMemberOpen(!memberOpen)}
                       className="flex w-full cursor-pointer items-center gap-3 rounded-xl border-2 border-amber/30 bg-amber-light px-4 py-3 text-left outline-none transition-all hover:border-amber focus:border-amber focus:ring-2 focus:ring-amber/30">
                       {selectedMember ? (
@@ -345,7 +349,9 @@ export default function DonationForm() {
                           </div>
                           <div className="min-w-0 flex-1">
                             <p className="text-base font-bold text-nobuk">{selectedMember.name}</p>
-                            <p className="text-xs font-medium text-amber-dark">{selectedMember.role}</p>
+                            <p className="text-xs font-medium text-amber-dark">
+                              {councilMeta[selectedMember.council]?.label || selectedMember.council}
+                            </p>
                           </div>
                         </>
                       ) : (
@@ -360,38 +366,53 @@ export default function DonationForm() {
                     </button>
 
                     {memberOpen && (
-                      <div className="absolute top-full left-0 right-0 z-20 mt-2 overflow-hidden rounded-xl border-2 border-amber/30 bg-white shadow-xl animate-scale-in">
+                      <div className="absolute z-20 mt-2 w-[calc(100%-2.5rem)] overflow-hidden rounded-xl border-2 border-amber/30 bg-white shadow-xl animate-scale-in">
                         <div className="border-b border-amber/20 bg-amber-light/50 p-3">
                           <div className="relative">
                             <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-amber-dark" />
-                            <input type="text" placeholder="Search committee members..." value={memberSearch}
+                            <input type="text" placeholder="Search church members..." value={memberSearch}
                               onChange={(e) => setMemberSearch(e.target.value)}
                               className="w-full rounded-lg border border-amber/20 bg-white py-2.5 pl-9 pr-3 text-sm font-medium text-nobuk placeholder-amber-dark/50 outline-none focus:border-amber focus:ring-2 focus:ring-amber/20" />
                           </div>
                         </div>
                         <div className="max-h-64 overflow-y-auto divide-y divide-amber/10">
-                          {filteredMembers.map((m) => (
-                            <button key={m.id} type="button"
-                              onClick={() => { setHonoredMember(m.id); setMemberOpen(false); setMemberSearch(""); }}
-                              className={`flex w-full cursor-pointer items-center gap-3 px-4 py-3 text-left transition-all ${
-                                honoredMember === m.id
-                                  ? "bg-amber/20 font-bold shadow-inner"
-                                  : "hover:bg-amber-light/80 hover:pl-5"
-                              }`}>
-                              <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-bold shadow-sm ${
-                                honoredMember === m.id ? "bg-amber text-white" : "bg-amber-light text-amber-dark"
-                              }`}>{initials(m.name)}</div>
-                              <div className="min-w-0">
-                                <p className={`text-sm ${honoredMember === m.id ? "text-nobuk font-bold" : "text-nobuk font-medium"}`}>{m.name}</p>
-                                <p className="text-xs text-muted">{m.role}</p>
-                              </div>
-                              {honoredMember === m.id && (
-                                <div className="ml-auto flex h-6 w-6 items-center justify-center rounded-full bg-amber">
-                                  <Check size={14} className="text-white" />
+                          {councilOrder.map(council => {
+                            const councilMembers = groupedMembers[council];
+                            if (!councilMembers?.length) return null;
+                            const meta = councilMeta[council] || { label: council, icon: Medal };
+                            const Icon = meta.icon;
+
+                            return (
+                              <div key={council}>
+                                <div className="sticky top-0 flex items-center gap-2 bg-amber-light/30 px-4 py-2">
+                                  <Icon size={14} className="text-amber-dark" />
+                                  <span className="text-xs font-bold text-amber-dark uppercase tracking-wider">{meta.label}</span>
+                                  <span className="ml-auto text-[10px] text-muted">{councilMembers.length}</span>
                                 </div>
-                              )}
-                            </button>
-                          ))}
+                                {councilMembers.map((m) => (
+                                  <button key={m.id} type="button"
+                                    onClick={() => { setHonoredMember(m.id); setMemberOpen(false); setMemberSearch(""); }}
+                                    className={`flex w-full cursor-pointer items-center gap-3 px-4 py-3 text-left transition-all ${
+                                      honoredMember === m.id
+                                        ? "bg-amber/20 font-bold shadow-inner"
+                                        : "hover:bg-amber-light/80 hover:pl-5"
+                                    }`}>
+                                    <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-bold shadow-sm ${
+                                      honoredMember === m.id ? "bg-amber text-white" : "bg-amber-light text-amber-dark"
+                                    }`}>{initials(m.name)}</div>
+                                    <div className="min-w-0">
+                                      <p className={`text-sm ${honoredMember === m.id ? "text-nobuk font-bold" : "text-nobuk font-medium"}`}>{m.name}</p>
+                                    </div>
+                                    {honoredMember === m.id && (
+                                      <div className="ml-auto flex h-6 w-6 items-center justify-center rounded-full bg-amber">
+                                        <Check size={14} className="text-white" />
+                                      </div>
+                                    )}
+                                  </button>
+                                ))}
+                              </div>
+                            );
+                          })}
                           {filteredMembers.length === 0 && (
                             <div className="px-4 py-8 text-center">
                               <Search size={24} className="mx-auto mb-2 text-amber/40" />
@@ -411,7 +432,7 @@ export default function DonationForm() {
                       </div>
                       <div>
                         <p className="text-sm font-bold text-nobuk">Honouring: {selectedMember.name}</p>
-                        <p className="text-xs text-amber-dark">{selectedMember.role}</p>
+                        <p className="text-xs text-amber-dark">{councilMeta[selectedMember.council]?.label || selectedMember.council}</p>
                       </div>
                     </div>
                   )}
@@ -460,7 +481,7 @@ export default function DonationForm() {
 
                 <div className="rounded-2xl border-2 border-amber/30 bg-amber-light/50 p-4 text-center">
                   <p className="text-xs font-bold text-amber-dark uppercase tracking-wider">Honour Donation via M-Pesa</p>
-                  <p className="mt-1 text-sm text-muted">Paybill: <span className="font-bold text-nobuk">247 247</span> Account: <span className="font-bold text-amber-dark">Harambee</span></p>
+                  <p className="mt-1 text-sm text-muted">Paybill: <span className="font-bold text-nobuk">835 872</span> Account: <span className="font-bold text-amber-dark">Your Name</span></p>
                 </div>
 
                 <button type="submit" disabled={!honoredMember || (!honAmount && !honCustom)}

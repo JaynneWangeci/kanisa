@@ -40,6 +40,10 @@ yarn-error.log*
 # vercel
 .vercel
 
+# temp / notes
+prompt.txt
+supabase/.temp/
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

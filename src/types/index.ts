@@ -23,6 +23,7 @@ export interface Donation {
   message: string | null;
   phone: string | null;
   honored_member_id: string | null;
+  church_member_id: string | null;
   created_at: string;
 }
 
@@ -35,6 +36,14 @@ export interface CommitteeMember {
   order: number;
 }
 
+export interface ChurchMember {
+  id: string;
+  name: string;
+  council: "parish_board" | "women_council" | "men_council" | "development";
+  is_active: boolean;
+  created_at: string;
+}
+
 export interface AdminUser {
   id: string;
   email: string;
@@ -44,10 +53,12 @@ export interface AdminUser {
 }
 
 export type AuditAction =
-  | "login" | "logout"
-  | "view_donations" | "view_donation"
+  | "login" | "logout" | "failed_login"
+  | "view_donations" | "view_donation" | "update_donation"
   | "export_ledger"
+  | "view_stats" | "view_members"
   | "create_committee" | "update_committee" | "delete_committee"
+  | "view_church_members" | "create_church_member" | "update_church_member" | "delete_church_member"
   | "view_audit_logs"
   | "create_admin" | "update_admin";
 
@@ -80,3 +91,10 @@ export interface DashboardStats {
     created_at: string;
   }[];
 }
+
+export const COUNCIL_LABELS: Record<string, string> = {
+  parish_board: "Parish Board",
+  women_council: "Women's Council",
+  men_council: "Men's Council",
+  development: "Development Committee",
+};
