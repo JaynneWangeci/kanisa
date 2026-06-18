@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Heart, Menu, X } from 'lucide-react';
+import DonationModal from './DonationModal';
 
 export default function ChurchHero() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [showGive, setShowGive] = useState(false);
 
   useEffect(() => {
     if (menuOpen) {
@@ -46,6 +48,7 @@ export default function ChurchHero() {
           <a
             href="#contribute"
             className="ml-2 bg-white hover:bg-white/90 text-[#1f2a1d] text-sm font-semibold px-5 py-2.5 rounded-full transition-colors"
+            onClick={(e) => { e.preventDefault(); setShowGive(true); }}
           >
             Give Now
           </a>
@@ -111,7 +114,7 @@ export default function ChurchHero() {
           >
             <a
               href="#contribute"
-              onClick={() => setMenuOpen(false)}
+              onClick={(e) => { e.preventDefault(); setMenuOpen(false); setShowGive(true); }}
               className="mt-2 bg-[#85AB8B] hover:bg-[#6d9a74] text-[#1f2a1d] text-sm font-semibold px-5 py-3 rounded-full transition-colors text-center"
             >
               Give Now
@@ -147,13 +150,20 @@ export default function ChurchHero() {
 
       {/* Bottom CTA */}
       <div className="relative z-10 flex items-center justify-center px-4 pb-8">
-        <a
-          href="#contribute"
+        <button
+          onClick={() => setShowGive(true)}
           className="bg-white hover:bg-white/90 text-[#1f2a1d] text-sm font-semibold px-5 sm:px-6 py-2.5 sm:py-3 rounded-full transition-colors shadow-sm"
         >
           Give to the Harambee
-        </a>
+        </button>
       </div>
+
+      {showGive && (
+        <DonationModal
+          member={{ id: 'general', name: '', role: '', council: '', photo_url: null }}
+          onClose={() => setShowGive(false)}
+        />
+      )}
     </>
   );
 }
