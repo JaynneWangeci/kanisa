@@ -43,6 +43,7 @@ yarn-error.log*
 # temp / notes
 prompt.txt
 key.txt
+keyy.txt
 *.jpg
 *.png
 supabase/.temp/
