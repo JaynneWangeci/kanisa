@@ -4,7 +4,7 @@ import { useInView } from '../hooks/useInView';
 
 export default function LiveProgress() {
   const [raised, setRaised] = useState(0);
-  const [goal] = useState(30000000);
+  const [goal, setGoal] = useState(30000000);
   const [displayRaised, setDisplayRaised] = useState(0);
   const [width, setWidth] = useState(0);
   const barRef = useRef<HTMLDivElement>(null);
@@ -16,13 +16,13 @@ export default function LiveProgress() {
   useEffect(() => {
     fetch('/api/campaigns/development-fund')
       .then(r => r.ok && r.json())
-      .then(data => { if (data?.raised) setRaised(Number(data.raised)); })
+      .then(data => { if (data) { setRaised(Number(data.raised ?? 0)); setGoal(Number(data.goal ?? 30000000)); } })
       .catch(() => {});
 
     const interval = setInterval(() => {
       fetch('/api/campaigns/development-fund')
         .then(r => r.ok && r.json())
-        .then(data => { if (data?.raised) setRaised(Number(data.raised)); })
+        .then(data => { if (data) { setRaised(Number(data.raised ?? 0)); setGoal(Number(data.goal ?? 30000000)); } })
         .catch(() => {});
     }, 8000);
 

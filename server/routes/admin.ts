@@ -19,7 +19,6 @@ adminRouter.get("/stats", requireAdmin, async (req, res) => {
       .single();
 
     const goal = Number(campaign?.goal || 30000000);
-    const seedRaised = Number(campaign?.raised || 0);
     const campaignId = campaign?.id;
 
     const { data: completedDonations } = await db
@@ -45,8 +44,7 @@ adminRouter.get("/stats", requireAdmin, async (req, res) => {
       userAgent: (req as any).userAgent,
     });
 
-    const totalFromDonations = (completedDonations || []).reduce((s, d) => s + Number(d.amount), 0);
-    const totalRaised = seedRaised + totalFromDonations;
+    const totalRaised = (completedDonations || []).reduce((s, d) => s + Number(d.amount), 0);
 
     const donors = new Set(
       (completedDonations || [])
@@ -61,8 +59,8 @@ adminRouter.get("/stats", requireAdmin, async (req, res) => {
       goal,
       raised: totalRaised,
       total_raised: totalRaised,
-      total_donors: campaignId ? donors.size + 15 : donors.size,
-      avg_gift: donors.size ? Math.round(totalFromDonations / donors.size) : 0,
+      total_donors: donors.size,
+      avg_gift: donors.size ? Math.round(totalRaised / donors.size) : 0,
       pending_count: (pendingDonations || []).length,
       failed_count: (failedDonations || []).length,
       member_count: 0,
