@@ -122,6 +122,10 @@ export default function AdminLogin() {
             </div>
           )}
           <p className="mt-4 text-center text-xs text-muted">
+            <a href="/admin/setup" className="underline underline-offset-2 hover:text-nobuk">
+              Create an account
+            </a>
+            <span className="mx-2 text-muted">|</span>
             <a href="/" className="underline underline-offset-2 hover:text-nobuk">
               &larr; Back to Harambee
             </a>

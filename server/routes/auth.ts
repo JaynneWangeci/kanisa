@@ -49,11 +49,6 @@ authRouter.post("/setup", async (req, res) => {
   try {
     const db = requireService();
 
-    const { data: existing } = await db.from("admin_users").select("id").limit(1);
-    if (existing && existing.length > 0) {
-      return res.status(400).json({ error: "Setup already completed. An admin already exists." });
-    }
-
     const { email, password, name } = req.body;
     if (!email || !password || !name) {
       return res.status(400).json({ error: "email, password, and name required" });
@@ -63,10 +58,13 @@ authRouter.post("/setup", async (req, res) => {
       return res.status(400).json({ error: "Password must be at least 6 characters" });
     }
 
+    const { data: existing } = await db.from("admin_users").select("id").limit(1);
+    const role = existing && existing.length > 0 ? "admin" : "super_admin";
+
     const passwordHash = hashPassword(password);
     const { data: admin, error } = await db
       .from("admin_users")
-      .insert({ email: email.toLowerCase().trim(), password_hash: passwordHash, name, role: "super_admin" })
+      .insert({ email: email.toLowerCase().trim(), password_hash: passwordHash, name, role })
       .select("id, email, name, role")
       .single();
 

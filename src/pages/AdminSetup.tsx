@@ -9,13 +9,14 @@ export default function AdminSetup() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [isFirstAdmin, setIsFirstAdmin] = useState(false);
 
   useEffect(() => {
     fetch("/api/auth/check-setup")
       .then(r => r.json())
-      .then(d => { if (!d.can_setup) navigate("/admin/login"); })
+      .then(d => setIsFirstAdmin(d.can_setup))
       .catch(() => {});
-  }, [navigate]);
+  }, []);
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -53,9 +54,9 @@ export default function AdminSetup() {
             <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-nobuk">
               <Shield size={20} className="text-white" />
             </div>
-            <h1 className="text-xl font-bold text-ink">Admin Setup</h1>
+            <h1 className="text-xl font-bold text-ink">Create Account</h1>
             <p className="mt-1 text-sm text-muted">
-              Create the first admin account
+              {isFirstAdmin ? "Create the first admin account" : "Sign up as a new admin"}
             </p>
           </div>
 
@@ -75,7 +76,7 @@ export default function AdminSetup() {
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="Super Admin"
+                  placeholder="Your full name"
                   required
                   className="w-full rounded-lg border border-gray-200 bg-cream py-2.5 pl-10 pr-4 text-sm text-ink outline-none transition focus:border-nobuk focus:bg-white"
                 />
@@ -89,7 +90,7 @@ export default function AdminSetup() {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="admin@church.org"
+                  placeholder="you@church.org"
                   required
                   className="w-full rounded-lg border border-gray-200 bg-cream py-2.5 pl-10 pr-4 text-sm text-ink outline-none transition focus:border-nobuk focus:bg-white"
                 />
@@ -119,6 +120,12 @@ export default function AdminSetup() {
               {loading ? "Creating account..." : "Create Admin Account"}
             </button>
           </form>
+
+          <p className="mt-4 text-center text-xs text-muted">
+            <a href="/admin/login" className="underline underline-offset-2 hover:text-nobuk">
+              Already have an account? Sign in
+            </a>
+          </p>
         </div>
       </div>
     </div>
