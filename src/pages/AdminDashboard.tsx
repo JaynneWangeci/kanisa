@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   TrendingUp, Users, DollarSign, Clock, AlertCircle,
-  Download, LogOut, RefreshCw, Shield, UserPlus, Trash2, Medal, Church, Settings, BarChart3, FileText, Presentation,
+  Download, LogOut, RefreshCw, Shield, UserPlus, Trash2, Medal, Church, Settings, BarChart3, FileText, Presentation, Search,
 } from "lucide-react";
 import type { DashboardStats, AdminUser, ChurchMember } from "../types";
 
@@ -45,6 +45,7 @@ export default function AdminDashboard() {
   const [pwCurrent, setPwCurrent] = useState("");
   const [pwNew, setPwNew] = useState("");
   const [pwError, setPwError] = useState("");
+  const [memberSearch, setMemberSearch] = useState("");
   const [analytics, setAnalytics] = useState<any>(null);
   const [exporting, setExporting] = useState<string | null>(null);
   const exportRef = useRef<HTMLDivElement>(null);
@@ -483,9 +484,24 @@ export default function AdminDashboard() {
                 <h2 className="text-sm font-bold text-ink">Church Members</h2>
                 <span className="ml-auto text-xs text-muted">{churchMembers.length} total</span>
               </div>
+              <div className="relative mb-4">
+                <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
+                <input
+                  type="text"
+                  placeholder="Search members to delete..."
+                  value={memberSearch}
+                  onChange={e => setMemberSearch(e.target.value)}
+                  className="w-full rounded-lg border border-gray-200 bg-cream py-2.5 pl-9 pr-3 text-sm text-ink outline-none focus:border-nobuk"
+                />
+              </div>
               {churchMembers.length ? (
                 <div className="space-y-4">
-                  {Object.entries(groupedMembers).map(([council, members]) => (
+                  {Object.entries(groupedMembers).map(([council, councilMembers]) => {
+                    const filteredCouncil = memberSearch
+                      ? councilMembers.filter(m => m.name.toLowerCase().includes(memberSearch.toLowerCase()))
+                      : councilMembers;
+                    if (filteredCouncil.length === 0) return null;
+                    return (
                     <div key={council}>
                       <div className="mb-2 flex items-center gap-2">
                         <Church size={14} className="text-muted" />
@@ -493,7 +509,7 @@ export default function AdminDashboard() {
                         <span className="text-[10px] text-muted">{members.length}</span>
                       </div>
                       <div className="space-y-1">
-                        {members.map((m) => (
+                        {filteredCouncil.map((m) => (
                           <div key={m.id} className="flex items-center justify-between rounded-lg bg-cream px-3 py-2">
                             <div className="flex items-center gap-3">
                               <div className="flex h-8 w-8 items-center justify-center rounded-full bg-nobuk-muted text-xs font-bold text-nobuk">

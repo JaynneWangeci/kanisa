@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Heart, Medal, Users, Church, ChevronDown, Check, Search } from 'lucide-react';
+import { Heart, Medal, Users, Church, ChevronDown, Check, Search, User } from 'lucide-react';
 import { useInView } from '../hooks/useInView';
 import DonationModal from './DonationModal';
 
@@ -43,6 +43,7 @@ export default function ContributeSection() {
   const [showModal, setShowModal] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [search, setSearch] = useState('');
+  const [donorName, setDonorName] = useState('');
   const dropdownRef = useRef<HTMLDivElement>(null);
   const { ref, inView } = useInView();
 
@@ -74,6 +75,21 @@ export default function ContributeSection() {
 
   const councilOrder = ['parish_board', 'women_council', 'men_council', 'development'];
 
+  function getSelectionTitle(): string {
+    if (selectedMember) return `Honouring: ${selectedMember.name}`;
+    if (donorName.trim()) return `Giving in my name: ${donorName.trim()}`;
+    return 'Give to the Harambee';
+  }
+
+  function handleContribute() {
+    if (selectedMember) {
+      setShowModal(true);
+    } else {
+      setSelectedMember({ id: 'general', name: donorName.trim() || 'General Harambee Fund', council: '' });
+      setShowModal(true);
+    }
+  }
+
   return (
     <>
       <section id="contribute" className="scroll-mt-16 bg-white/10 backdrop-blur-sm px-4 py-24 md:py-32">
@@ -84,15 +100,39 @@ export default function ContributeSection() {
               Contribute
             </span>
             <h2 className="mt-4 text-3xl font-bold text-[#1f2a1d] md:text-4xl" style={{ fontFamily: '"Neue Haas Grotesk Display Pro 55 Roman", "Neue Haas Grotesk Text Pro", "Helvetica Neue", Helvetica, Arial, sans-serif', letterSpacing: '-0.02em' }}>
-              Honour a Member
+              Give to the Harambee
             </h2>
             <p className="mx-auto mt-2 max-w-sm text-sm text-[#4b5b47]">
-              Select a church member to honour with your contribution to the Harambee.
+              Give in your name or honour a church member with your contribution.
             </p>
           </div>
 
           <div ref={ref} className="mx-auto max-w-lg">
-            {/* Grouped Dropdown */}
+            {/* Your Name (free text) */}
+            <div className="mb-4">
+              <label className="mb-1.5 flex items-center gap-1.5 text-sm font-bold text-[#1f2a1d]">
+                <User size={14} className="text-[#85AB8B]" /> Your name <span className="font-normal text-[#4b5b47]">(optional)</span>
+              </label>
+              <div className="relative">
+                <User size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#85AB8B]/60" />
+                <input
+                  type="text"
+                  placeholder="e.g. Mary Wanjiku"
+                  value={donorName}
+                  onChange={e => { setDonorName(e.target.value); if (selectedMember) setSelectedMember(null); }}
+                  className="w-full rounded-2xl border-2 border-[#336443]/20 bg-white py-4 pl-11 pr-4 text-base text-[#1f2a1d] outline-none transition placeholder:text-[#4b5b47]/40 focus:border-[#336443]"
+                />
+              </div>
+            </div>
+
+            {/* Divider */}
+            <div className="mb-4 flex items-center gap-3">
+              <div className="h-px flex-1 bg-[#2d3a2a]/10" />
+              <span className="text-xs font-medium text-[#4b5b47]">OR</span>
+              <div className="h-px flex-1 bg-[#2d3a2a]/10" />
+            </div>
+
+            {/* Honour a Member Dropdown */}
             <div ref={dropdownRef} className="relative">
               <button
                 type="button"
@@ -116,7 +156,7 @@ export default function ContributeSection() {
                     <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border-2 border-dashed border-[#85AB8B]/40 bg-[#85AB8B]/10 text-[#336443]">
                       <Medal size={18} />
                     </div>
-                    <span className="text-base font-medium text-[#4b5b47]">Select a member to honour...</span>
+                    <span className="text-base font-medium text-[#4b5b47]">Honour a member (optional)</span>
                   </>
                 )}
                 <ChevronDown size={20} className={`ml-auto shrink-0 text-[#336443] transition ${dropdownOpen ? 'rotate-180' : ''}`} />
@@ -156,7 +196,7 @@ export default function ContributeSection() {
                             <button
                               key={m.id}
                               type="button"
-                              onClick={() => { setSelectedMember(m); setDropdownOpen(false); setSearch(''); }}
+                              onClick={() => { setSelectedMember(m); setDropdownOpen(false); setSearch(''); setDonorName(''); }}
                               className={`flex w-full items-center gap-3 px-4 py-3 text-left transition-all ${
                                 selectedMember?.id === m.id
                                   ? 'bg-[#85AB8B]/20 font-bold'
@@ -212,14 +252,23 @@ export default function ContributeSection() {
               </div>
             )}
 
+            {(donorName.trim() || selectedMember) && (
+              <div className={`mt-4 flex items-center gap-3 rounded-xl border border-[#336443]/20 bg-[#85AB8B]/5 px-4 py-3 ${inView ? 'animate-fade-in' : 'opacity-0'}`}>
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#336443]">
+                  <Heart size={14} className="text-white" />
+                </div>
+                <p className="text-sm font-bold text-[#1f2a1d]">{getSelectionTitle()}</p>
+              </div>
+            )}
+
             {/* Contribute button */}
             <div className={`mt-8 text-center ${inView ? 'animate-fade-in' : 'opacity-0'}`} style={{ animationDelay: '0.2s' }}>
               <button
-                onClick={() => setShowModal(true)}
-                disabled={!selectedMember}
+                onClick={handleContribute}
+                disabled={!donorName.trim() && !selectedMember}
                 className="btn-lift w-full rounded-full bg-[#1f2a1d] px-8 py-4 text-base font-bold text-white shadow-sm hover:bg-[#2a3827] disabled:cursor-not-allowed disabled:opacity-40"
               >
-                {selectedMember ? `Honour ${selectedMember.name} via M-Pesa` : 'Select a member to continue'}
+                Continue to Give
               </button>
             </div>
           </div>
@@ -228,15 +277,8 @@ export default function ContributeSection() {
           <div className={`mt-16 text-center ${inView ? 'animate-fade-in' : 'opacity-0'}`} style={{ animationDelay: '0.5s' }}>
             <div className="mx-auto max-w-lg rounded-2xl border border-white/20 bg-white/70 backdrop-blur-md p-8 shadow-sm">
               <Heart size={24} className="mx-auto mb-3 text-[#336443]" />
-              <h3 className="text-xl font-bold text-[#1f2a1d]">Give to the General Fund</h3>
-              <p className="mt-1 text-sm text-[#4b5b47]">Support the Harambee without naming a specific member.</p>
-              <button
-                onClick={() => { setSelectedMember({ id: 'general', name: 'General Harambee Fund', council: '' }); setShowModal(true); }}
-                className="btn-lift mt-4 inline-flex items-center gap-2 rounded-full bg-[#1f2a1d] px-6 py-3 text-sm font-semibold text-white hover:bg-[#2a3827]"
-              >
-                <Heart size={14} />
-                Give to Harambee
-              </button>
+              <h3 className="text-xl font-bold text-[#1f2a1d]">Or give directly via M-Pesa</h3>
+              <p className="mt-1 text-lg font-bold text-[#336443]">Paybill: 835 872</p>
             </div>
           </div>
         </div>
@@ -245,7 +287,8 @@ export default function ContributeSection() {
       {showModal && selectedMember && (
         <DonationModal
           member={selectedMember}
-          onClose={() => { setShowModal(false); setSelectedMember(null); }}
+          donorName={donorName}
+          onClose={() => { setShowModal(false); setSelectedMember(null); setDonorName(''); }}
         />
       )}
     </>

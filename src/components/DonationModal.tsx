@@ -20,15 +20,16 @@ function formatPhone(value: string): string {
 
 interface Props {
   member: Member;
+  donorName?: string;
   onClose: () => void;
 }
 
-export default function DonationModal({ member, onClose }: Props) {
+export default function DonationModal({ member, onClose, donorName: initialDonorName }: Props) {
   const isGeneral = member.id === 'general';
   const [step, setStep] = useState<Step>('form');
   const [amount, setAmount] = useState<number | 'custom' | null>(null);
   const [customAmount, setCustomAmount] = useState('');
-  const [name, setName] = useState('');
+  const [name, setName] = useState(initialDonorName || '');
   const [phone, setPhone] = useState('');
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
@@ -129,7 +130,7 @@ export default function DonationModal({ member, onClose }: Props) {
 
   function reset() {
     setStep('form');
-    setAmount(null); setCustomAmount(''); setName(''); setPhone(''); setMessage('');
+    setAmount(null); setCustomAmount(''); setPhone(''); setMessage('');
     setError(''); setReceiptNumber('');
   }
 
