@@ -10,7 +10,9 @@ const TILL_NUMBER = process.env.MPESA_TILL_NUMBER || "835872";
 const PASSKEY = process.env.MPESA_PASSKEY || "";
 const CALLBACK_URL = process.env.MPESA_CALLBACK_URL || "https://yourdomain.com/api/mpesa/callback";
 const ENV = process.env.MPESA_ENV || "sandbox";
-const TRANSACTION_TYPE = process.env.MPESA_TRANSACTION_TYPE || "CustomerBuyGoodsOnline";
+const TRANSACTION_TYPE = ENV === "sandbox"
+  ? "CustomerPayBillOnline"
+  : (process.env.MPESA_TRANSACTION_TYPE || "CustomerBuyGoodsOnline");
 
 const BASE_URL = ENV === "production"
   ? "https://api.safaricom.co.ke"
@@ -42,10 +44,11 @@ mpesaRouter.post("/stkpush", async (req, res) => {
     const timestamp = new Date().toISOString().replace(/[^0-9]/g, "").slice(0, 14);
     const password = Buffer.from(`${SHORTCODE}${PASSKEY}${timestamp}`).toString("base64");
 
-    const PartyB = TRANSACTION_TYPE === "CustomerBuyGoodsOnline" ? TILL_NUMBER : SHORTCODE;
+    const PartyB = ENV === "sandbox" ? SHORTCODE : (TRANSACTION_TYPE === "CustomerBuyGoodsOnline" ? TILL_NUMBER : SHORTCODE);
+    const BusinessShortCode = ENV === "sandbox" ? SHORTCODE : PartyB;
 
     const payload = {
-      BusinessShortCode: SHORTCODE,
+      BusinessShortCode,
       Password: password,
       Timestamp: timestamp,
       TransactionType: TRANSACTION_TYPE,
