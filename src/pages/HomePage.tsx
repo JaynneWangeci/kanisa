@@ -3,7 +3,6 @@ import ChurchHero from "../components/ChurchHero";
 import LiveProgress from "../components/LiveProgress";
 import AboutSection from "../components/AboutSection";
 import ContributeSection from "../components/ContributeSection";
-import ContributionBreakdown from "../components/ContributionBreakdown";
 import Footer from "../components/Footer";
 
 export default function HomePage() {
@@ -15,7 +14,6 @@ export default function HomePage() {
         <LiveProgress />
         <AboutSection />
         <ContributeSection />
-        <ContributionBreakdown />
         <Footer />
       </div>
     </main>

@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   TrendingUp, Users, DollarSign, Clock, AlertCircle,
-  Download, LogOut, RefreshCw, Shield, UserPlus, Trash2, Medal, Church, Settings,
+  Download, LogOut, RefreshCw, Shield, UserPlus, Trash2, Medal, Church, Settings, BarChart3, FileText, Presentation,
 } from "lucide-react";
 import type { DashboardStats, AdminUser, ChurchMember } from "../types";
 
@@ -21,7 +21,7 @@ export default function AdminDashboard() {
   const [logs, setLogs] = useState<unknown[]>([]);
   const [loading, setLoading] = useState(true);
   const [exportOpen, setExportOpen] = useState(false);
-  const [tab, setTab] = useState<"overview" | "members" | "admins">("overview");
+  const [tab, setTab] = useState<"overview" | "members" | "admins" | "analytics">("overview");
   const [churchMembers, setChurchMembers] = useState<ChurchMember[]>([]);
   const [newName, setNewName] = useState("");
   const [newCouncil, setNewCouncil] = useState("parish_board");
@@ -45,6 +45,8 @@ export default function AdminDashboard() {
   const [pwCurrent, setPwCurrent] = useState("");
   const [pwNew, setPwNew] = useState("");
   const [pwError, setPwError] = useState("");
+  const [analytics, setAnalytics] = useState<any>(null);
+  const [exporting, setExporting] = useState<string | null>(null);
   const exportRef = useRef<HTMLDivElement>(null);
 
   const token = localStorage.getItem("token");
@@ -92,6 +94,15 @@ export default function AdminDashboard() {
     } catch { /* silent */ }
   }, [admin?.role, token]);
 
+  const fetchAnalytics = useCallback(async () => {
+    try {
+      const res = await fetch("/api/contributions/analytics", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) setAnalytics(await res.json());
+    } catch { /* silent */ }
+  }, [token]);
+
   const fetchMembers = useCallback(async () => {
     try {
       const res = await fetch("/api/members");
@@ -110,7 +121,8 @@ export default function AdminDashboard() {
     fetchLogs();
     fetchMembers();
     fetchAdmins();
-  }, [admin, fetchStats, fetchLogs, fetchMembers, fetchAdmins]);
+    fetchAnalytics();
+  }, [admin, fetchStats, fetchLogs, fetchMembers, fetchAdmins, fetchAnalytics]);
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
@@ -229,7 +241,7 @@ export default function AdminDashboard() {
             <p className="text-xs text-muted">{admin.name} &middot; {admin.role.replace("_", " ")}</p>
           </div>
           <div className="flex items-center gap-3">
-            <button onClick={() => { fetchStats(); fetchLogs(); fetchMembers(); fetchAdmins(); }} className="rounded-lg p-2 text-muted transition hover:bg-cream" title="Refresh">
+            <button onClick={() => { fetchStats(); fetchLogs(); fetchMembers(); fetchAdmins(); fetchAnalytics(); }} className="rounded-lg p-2 text-muted transition hover:bg-cream" title="Refresh">
               <RefreshCw size={16} />
             </button>
             <a href="/" className="text-sm text-muted underline underline-offset-2 hover:text-nobuk">View Site</a>
@@ -271,6 +283,15 @@ export default function AdminDashboard() {
               Admins ({admins.length})
             </button>
           )}
+          <button
+            onClick={() => setTab("analytics")}
+            className={`pb-3 text-sm font-bold transition border-b-2 ${
+              tab === "analytics" ? "border-nobuk text-nobuk" : "border-transparent text-muted hover:text-nobuk"
+            }`}
+          >
+            <BarChart3 size={14} className="inline mr-1" />
+            Analytics
+          </button>
         </div>
 
         {tab === "overview" && (
@@ -725,6 +746,186 @@ export default function AdminDashboard() {
                   >
                     Cancel
                   </button>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {tab === "analytics" && (
+          <div className="space-y-6">
+            <div className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
+              <div className="mb-4 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <BarChart3 size={16} className="text-nobuk" />
+                  <h2 className="text-sm font-bold text-ink">Contribution Analytics</h2>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={async () => {
+                      setExporting("pdf");
+                      try {
+                        const res = await fetch("/api/contributions/export/pdf", {
+                          headers: { Authorization: `Bearer ${token}` },
+                        });
+                        if (!res.ok) return;
+                        const blob = await res.blob();
+                        const a = document.createElement("a");
+                        a.href = URL.createObjectURL(blob);
+                        a.download = `harambee-report-${new Date().toISOString().slice(0, 10)}.pdf`;
+                        a.click();
+                        URL.revokeObjectURL(a.href);
+                      } catch {}
+                      setExporting(null);
+                    }}
+                    disabled={exporting === "pdf"}
+                    className="flex items-center gap-1 rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-semibold text-muted hover:bg-cream disabled:opacity-40"
+                  >
+                    <FileText size={14} /> {exporting === "pdf" ? "Generating..." : "PDF"}
+                  </button>
+                  <button
+                    onClick={async () => {
+                      setExporting("ppt");
+                      try {
+                        const res = await fetch("/api/contributions/export/ppt", {
+                          headers: { Authorization: `Bearer ${token}` },
+                        });
+                        if (!res.ok) return;
+                        const blob = await res.blob();
+                        const a = document.createElement("a");
+                        a.href = URL.createObjectURL(blob);
+                        a.download = `harambee-report-${new Date().toISOString().slice(0, 10)}.pptx`;
+                        a.click();
+                        URL.revokeObjectURL(a.href);
+                      } catch {}
+                      setExporting(null);
+                    }}
+                    disabled={exporting === "ppt"}
+                    className="flex items-center gap-1 rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-semibold text-muted hover:bg-cream disabled:opacity-40"
+                  >
+                    <Presentation size={14} /> {exporting === "ppt" ? "Generating..." : "PPT"}
+                  </button>
+                </div>
+              </div>
+
+              {analytics ? (
+                <>
+                  <div className="mb-6 grid gap-4 sm:grid-cols-3">
+                    <div className="rounded-lg bg-nobuk p-4 text-white">
+                      <p className="text-xs font-medium uppercase tracking-wider opacity-80">Total Raised</p>
+                      <p className="mt-1 text-2xl font-bold">KES {analytics.overall_total?.toLocaleString("en-KE") || "0"}</p>
+                    </div>
+                    <div className="rounded-lg bg-nobuk-light p-4 text-white">
+                      <p className="text-xs font-medium uppercase tracking-wider opacity-80">Total Donations</p>
+                      <p className="mt-1 text-2xl font-bold">{analytics.overall_count || 0}</p>
+                    </div>
+                    <div className="rounded-lg border border-gray-200 bg-cream p-4">
+                      <p className="text-xs font-medium uppercase tracking-wider text-muted">Honoured Members</p>
+                      <p className="mt-1 text-2xl font-bold text-nobuk">{analytics.member_ranking?.length || 0}</p>
+                    </div>
+                  </div>
+
+                  <div className="mb-6">
+                    <h3 className="mb-3 text-sm font-bold text-ink">Daily Contributions (30 days)</h3>
+                    <div className="flex items-end gap-1 overflow-x-auto pb-2" style={{ minHeight: 120 }}>
+                      {analytics.daily?.map((d: any) => {
+                        const max = Math.max(...analytics.daily.map((x: any) => x.total), 1);
+                        const h = Math.max((d.total / max) * 80, 2);
+                        return (
+                          <div key={d.date} className="flex flex-col items-center shrink-0" style={{ width: 28 }}>
+                            <span className="text-[9px] font-bold text-nobuk tabular-nums">{(d.total / 1000).toFixed(0)}k</span>
+                            <div
+                              className="mt-1 w-full rounded-t"
+                              style={{ height: h, background: "linear-gradient(180deg, #C4964A, #336443)", minHeight: 2 }}
+                              title={`${d.date}: KES ${d.total.toLocaleString("en-KE")}`}
+                            />
+                            <span className="mt-1 text-[8px] text-muted">{d.date.slice(5)}</span>
+                          </div>
+                        );
+                      })}
+                      {(!analytics.daily || analytics.daily.length === 0) && (
+                        <p className="text-sm text-muted">No donation data in the last 30 days.</p>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="grid gap-6 lg:grid-cols-2">
+                    <div className="rounded-lg border border-gray-100 bg-cream p-4">
+                      <h3 className="mb-3 text-sm font-bold text-ink">Council Breakdown</h3>
+                      {analytics.council_breakdown?.length ? (
+                        <div className="space-y-2">
+                          {analytics.council_breakdown.map((c: any) => {
+                            const maxCouncil = Math.max(...analytics.council_breakdown.map((x: any) => x.total), 1);
+                            const pct = Math.round((c.total / maxCouncil) * 100);
+                            return (
+                              <div key={c.council}>
+                                <div className="flex items-center justify-between text-xs">
+                                  <span className="font-semibold text-ink">{c.council.replace(/_/g, " ")}</span>
+                                  <span className="font-bold text-nobuk">KES {c.total.toLocaleString("en-KE")}</span>
+                                </div>
+                                <div className="mt-1 h-3 w-full overflow-hidden rounded-full bg-white">
+                                  <div className="h-full rounded-full bg-nobuk" style={{ width: `${pct}%` }} />
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      ) : (
+                        <p className="text-sm text-muted">No council data yet.</p>
+                      )}
+                    </div>
+
+                    <div className="rounded-lg border border-gray-100 bg-cream p-4">
+                      <h3 className="mb-3 text-sm font-bold text-ink">Top Donors</h3>
+                      {analytics.top_donors?.length ? (
+                        <div className="space-y-1">
+                          {analytics.top_donors.slice(0, 10).map((d: any, i: number) => (
+                            <div key={i} className="flex items-center justify-between rounded-lg bg-white px-3 py-2">
+                              <div className="flex items-center gap-2">
+                                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-nobuk-muted text-[10px] font-bold text-nobuk">
+                                  {i + 1}
+                                </span>
+                                <span className="text-sm font-medium text-ink">{d.name}</span>
+                              </div>
+                              <span className="text-sm font-bold text-nobuk tabular-nums">KES {d.amount.toLocaleString("en-KE")}</span>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-sm text-muted">No donor data yet.</p>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="mt-6 rounded-lg border border-gray-100 bg-cream p-4">
+                    <h3 className="mb-3 text-sm font-bold text-ink">Member Honour Ranking</h3>
+                    {analytics.member_ranking?.length ? (
+                      <div className="space-y-1">
+                        {analytics.member_ranking.slice(0, 20).map((m: any, i: number) => (
+                          <div key={m.id} className="flex items-center justify-between rounded-lg bg-white px-3 py-2">
+                            <div className="flex items-center gap-2">
+                              <span className={`flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-bold ${
+                                i === 0 ? "bg-amber text-white" : i === 1 ? "bg-gray-300 text-gray-700" : i === 2 ? "bg-amber-light text-amber-dark" : "bg-nobuk-muted text-nobuk"
+                              }`}>
+                                {i + 1}
+                              </span>
+                              <div>
+                                <p className="text-sm font-medium text-ink">{m.name}</p>
+                                <p className="text-[10px] text-muted">{m.council.replace(/_/g, " ")} &middot; {m.count} donations</p>
+                              </div>
+                            </div>
+                            <span className="text-sm font-bold text-nobuk tabular-nums">KES {m.total.toLocaleString("en-KE")}</span>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-sm text-muted">No member honour data yet.</p>
+                    )}
+                  </div>
+                </>
+              ) : (
+                <div className="flex items-center justify-center py-12">
+                  <div className="h-6 w-6 animate-spin rounded-full border-2 border-nobuk border-t-transparent" />
                 </div>
               )}
             </div>
