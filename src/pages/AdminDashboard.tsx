@@ -502,32 +502,32 @@ export default function AdminDashboard() {
                       : councilMembers;
                     if (filteredCouncil.length === 0) return null;
                     return (
-                    <div key={council}>
-                      <div className="mb-2 flex items-center gap-2">
-                        <Church size={14} className="text-muted" />
-                        <h3 className="text-xs font-bold text-muted uppercase tracking-wider">{councilLabels[council] || council}</h3>
-                        <span className="text-[10px] text-muted">{members.length}</span>
-                      </div>
-                      <div className="space-y-1">
-                        {filteredCouncil.map((m) => (
-                          <div key={m.id} className="flex items-center justify-between rounded-lg bg-cream px-3 py-2">
-                            <div className="flex items-center gap-3">
-                              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-nobuk-muted text-xs font-bold text-nobuk">
-                                {m.name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2)}
+                      <div key={council}>
+                        <div className="mb-2 flex items-center gap-2">
+                          <Church size={14} className="text-muted" />
+                          <h3 className="text-xs font-bold text-muted uppercase tracking-wider">{councilLabels[council] || council}</h3>
+                          <span className="text-[10px] text-muted">{filteredCouncil.length}</span>
+                        </div>
+                        <div className="space-y-1">
+                          {filteredCouncil.map((m) => (
+                            <div key={m.id} className="flex items-center justify-between rounded-lg bg-cream px-3 py-2">
+                              <div className="flex items-center gap-3">
+                                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-nobuk-muted text-xs font-bold text-nobuk">
+                                  {m.name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2)}
+                                </div>
+                                <div>
+                                  <p className="text-sm font-medium text-ink">{m.name}</p>
+                                </div>
                               </div>
-                              <div>
-                                <p className="text-sm font-medium text-ink">{m.name}</p>
-                              </div>
+                              <button onClick={() => deleteMember(m.id)}
+                                className="rounded-lg p-1.5 text-muted transition hover:bg-red-50 hover:text-red-600">
+                                <Trash2 size={14} />
+                              </button>
                             </div>
-                            <button onClick={() => deleteMember(m.id)}
-                              className="rounded-lg p-1.5 text-muted transition hover:bg-red-50 hover:text-red-600">
-                              <Trash2 size={14} />
-                            </button>
-                          </div>
-                        ))}
+                          ))}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
                 </div>
               ) : (
                 <p className="text-sm text-muted">No members yet. Add your first church member above.</p>
