@@ -45,6 +45,7 @@ prompt.txt
 key.txt
 keyy.txt
 consumers.txt
+ver.txt
 *.jpg
 *.png
 supabase/.temp/
