@@ -10,6 +10,7 @@ import { mpesaRouter } from "./routes/mpesa.js";
 import { c2bRouter } from "./routes/c2b.js";
 import { ledgerRouter } from "./routes/ledger.js";
 import { membersRouter } from "./routes/members.js";
+import { contributionsRouter } from "./routes/contributions.js";
 import { rateLimit } from "./lib/admin.js";
 
 if (!process.env.VERCEL) {
@@ -31,6 +32,7 @@ app.use("/api/mpesa", mpesaRouter);
 app.use("/api/c2b", c2bRouter);
 app.use("/api/ledger", rateLimit, ledgerRouter);
 app.use("/api/members", membersRouter);
+app.use("/api/contributions", contributionsRouter);
 
 app.get("/api/health", (_req, res) => res.json({ ok: true }));
 
