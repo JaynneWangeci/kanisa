@@ -23,7 +23,19 @@ campaignsRouter.get("/:slug", async (req, res) => {
 
     const raised = sumData?.reduce((acc, d) => acc + Number(d.amount), 0) || 0;
 
-    res.json({ ...data, raised });
+    res.json({
+      id: data.id,
+      slug: data.slug,
+      title: data.title,
+      description: data.description,
+      goal: Number(data.goal),
+      raised,
+      currency: data.currency,
+      starts_at: data.starts_at,
+      ends_at: data.ends_at,
+      is_active: data.is_active,
+      created_at: data.created_at,
+    });
   } catch (err) {
     console.error("campaign error:", err);
     res.status(500).json({ error: "Server error" });
