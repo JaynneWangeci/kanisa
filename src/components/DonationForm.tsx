@@ -132,11 +132,11 @@ export default function DonationForm() {
       try {
         const res = await fetch(`/api/mpesa/status/${checkoutId}`);
         const data = await res.json();
-        if (data.ResultCode === "0" || data.status === "completed") {
+        if (String(data.ResultCode) === "0" || data.status === "completed") {
           clearInterval(interval);
           setReceiptNumber(data.receipt_number || `TXN-${Date.now()}`);
           setStep("success");
-        } else if (data.ResultCode !== undefined && data.ResultCode !== "0") {
+        } else if (data.ResultCode !== undefined && String(data.ResultCode) !== "0") {
           clearInterval(interval);
           setError("Payment failed. Please try again.");
           setStep("form");

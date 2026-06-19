@@ -98,7 +98,7 @@ mpesaRouter.post("/stkpush", async (req, res) => {
 
     const stkData = await stkRes.json();
 
-    if (stkData.ResponseCode === "0" && donation_id) {
+    if (String(stkData.ResponseCode) === "0" && donation_id) {
       const db = requireService();
 
       await db
@@ -238,7 +238,7 @@ mpesaRouter.get("/status/:checkoutRequestId", async (req, res) => {
     const data = await statusRes.json();
 
     // If Safaricom confirms completion, update DB immediately
-    if (data.ResultCode === "0" && donation) {
+    if (String(data.ResultCode) === "0" && donation) {
       let receiptNumber = "";
       if (data.CallbackMetadata?.Item) {
         for (const item of data.CallbackMetadata.Item) {
