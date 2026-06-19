@@ -10,9 +10,7 @@ const TILL_NUMBER = process.env.MPESA_TILL_NUMBER || "835872";
 const PASSKEY = process.env.MPESA_PASSKEY || "";
 const CALLBACK_URL = process.env.MPESA_CALLBACK_URL || "https://yourdomain.com/api/mpesa/callback";
 const ENV = process.env.MPESA_ENV || "sandbox";
-const TRANSACTION_TYPE = ENV === "sandbox"
-  ? "CustomerPayBillOnline"
-  : (process.env.MPESA_TRANSACTION_TYPE || "CustomerBuyGoodsOnline");
+const TRANSACTION_TYPE = process.env.MPESA_TRANSACTION_TYPE || "CustomerPayBillOnline";
 
 const BASE_URL = ENV === "production"
   ? "https://api.safaricom.co.ke"
