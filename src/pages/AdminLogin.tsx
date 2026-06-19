@@ -103,6 +103,11 @@ export default function AdminLogin() {
               {loading && <Loader2 size={16} className="animate-spin" />}
               {loading ? "Signing in..." : "Sign in"}
             </button>
+            <p className="text-center text-xs">
+              <a href="/admin/forgot-password" className="text-muted underline underline-offset-2 hover:text-nobuk">
+                Forgot password?
+              </a>
+            </p>
           </form>
 
           {needsSetup && (

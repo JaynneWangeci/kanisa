@@ -14,7 +14,8 @@ const reqCounts = new Map<string, { count: number; resetAt: number }>();
 
 export type AuditAction =
   | "login" | "logout" | "failed_login"
-  | "password_change" | "rate_limit_blocked"
+  | "password_change" | "password_reset" | "password_reset_request"
+  | "rate_limit_blocked"
   | "view_donations" | "view_donation" | "update_donation"
   | "export_ledger"
   | "view_stats"
