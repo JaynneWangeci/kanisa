@@ -20,7 +20,7 @@ if (!process.env.VERCEL) {
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-app.use(cors({ origin: process.env.CORS_ORIGIN || "http://localhost:3000", credentials: true }));
+app.use(cors({ origin: process.env.CORS_ORIGIN || "http://localhost:5173", credentials: true }));
 app.use(express.json());
 
 app.use("/api/auth", authRouter);
@@ -37,14 +37,17 @@ app.use("/api/contributions", contributionsRouter);
 app.get("/api/health", (_req, res) => res.json({ ok: true }));
 
 app.get("/api/debug", (_req, res) => {
+  const mask = (s: string) => s ? `${s.slice(0, 4)}...${s.slice(-4)}` : "not set";
   res.json({
     has_supabase_url: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
     has_supabase_key: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
     has_service_key: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
-    has_mpesa_key: !!process.env.MPESA_CONSUMER_KEY?.length,
-    has_mpesa_secret: !!process.env.MPESA_CONSUMER_SECRET?.length,
     mpesa_env: process.env.MPESA_ENV || "not set",
-    shortcode: process.env.MPESA_SHORTCODE || "not set",
+    mpesa_consumer_key: mask(process.env.MPESA_CONSUMER_KEY),
+    mpesa_consumer_secret: mask(process.env.MPESA_CONSUMER_SECRET),
+    mpesa_shortcode: process.env.MPESA_SHORTCODE || "not set",
+    mpesa_passkey: mask(process.env.MPESA_PASSKEY),
+    mpesa_callback_url: process.env.MPESA_CALLBACK_URL || "not set",
   });
 });
 

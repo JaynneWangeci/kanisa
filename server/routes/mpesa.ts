@@ -5,23 +5,48 @@ export const mpesaRouter = Router();
 
 const CONSUMER_KEY = process.env.MPESA_CONSUMER_KEY || "";
 const CONSUMER_SECRET = process.env.MPESA_CONSUMER_SECRET || "";
-const SHORTCODE = process.env.MPESA_SHORTCODE || "174379";
-const TILL_NUMBER = process.env.MPESA_TILL_NUMBER || "835872";
+const SHORTCODE = process.env.MPESA_SHORTCODE || "";
 const PASSKEY = process.env.MPESA_PASSKEY || "";
-const CALLBACK_URL = process.env.MPESA_CALLBACK_URL || "https://yourdomain.com/api/mpesa/callback";
-const ENV = process.env.MPESA_ENV || "sandbox";
-const TRANSACTION_TYPE = process.env.MPESA_TRANSACTION_TYPE || "CustomerPayBillOnline";
+const CALLBACK_URL = process.env.MPESA_CALLBACK_URL || "";
+const ENV = (process.env.MPESA_ENV || "sandbox") as "sandbox" | "production";
 
-const BASE_URL = ENV === "production"
-  ? "https://api.safaricom.co.ke"
-  : "https://sandbox.safaricom.co.ke";
+const BASE_URL =
+  ENV === "production"
+    ? "https://api.safaricom.co.ke"
+    : "https://sandbox.safaricom.co.ke";
 
-async function getAccessToken() {
+let cachedToken: { token: string; expiresAt: number } | null = null;
+
+function timestamp(): string {
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = String(now.getMonth() + 1).padStart(2, "0");
+  const d = String(now.getDate()).padStart(2, "0");
+  const h = String(now.getHours()).padStart(2, "0");
+  const min = String(now.getMinutes()).padStart(2, "0");
+  const s = String(now.getSeconds()).padStart(2, "0");
+  return `${y}${m}${d}${h}${min}${s}`;
+}
+
+async function getAccessToken(): Promise<string> {
+  if (cachedToken && Date.now() < cachedToken.expiresAt) {
+    return cachedToken.token;
+  }
+
   const auth = Buffer.from(`${CONSUMER_KEY}:${CONSUMER_SECRET}`).toString("base64");
   const res = await fetch(`${BASE_URL}/oauth/v1/generate?grant_type=client_credentials`, {
     headers: { Authorization: `Basic ${auth}` },
   });
+
+  if (!res.ok) {
+    throw new Error(`Daraja auth failed (${res.status})`);
+  }
+
   const data = await res.json();
+  cachedToken = {
+    token: data.access_token,
+    expiresAt: Date.now() + (Number(data.expires_in) - 60) * 1000,
+  };
   return data.access_token;
 }
 
@@ -33,30 +58,33 @@ mpesaRouter.post("/stkpush", async (req, res) => {
       return res.status(400).json({ error: "phone and amount required" });
     }
 
-    const normalizedPhone = phone.replace(/^0+/, "254").replace(/^\+/, "");
+    let normalizedPhone = phone.replace(/[\s\-\(\)]/g, "");
+    if (normalizedPhone.startsWith("0")) {
+      normalizedPhone = "254" + normalizedPhone.slice(1);
+    } else if (normalizedPhone.startsWith("+")) {
+      normalizedPhone = normalizedPhone.slice(1);
+    }
+
     if (normalizedPhone.length < 10) {
       return res.status(400).json({ error: "Invalid phone number" });
     }
 
     const accessToken = await getAccessToken();
-    const timestamp = new Date().toISOString().replace(/[^0-9]/g, "").slice(0, 14);
-    const password = Buffer.from(`${SHORTCODE}${PASSKEY}${timestamp}`).toString("base64");
-
-    const PartyB = ENV === "sandbox" ? SHORTCODE : (TRANSACTION_TYPE === "CustomerBuyGoodsOnline" ? TILL_NUMBER : SHORTCODE);
-    const BusinessShortCode = ENV === "sandbox" ? SHORTCODE : PartyB;
+    const ts = timestamp();
+    const password = Buffer.from(`${SHORTCODE}${PASSKEY}${ts}`).toString("base64");
 
     const payload = {
-      BusinessShortCode,
+      BusinessShortCode: SHORTCODE,
       Password: password,
-      Timestamp: timestamp,
-      TransactionType: TRANSACTION_TYPE,
+      Timestamp: ts,
+      TransactionType: "CustomerPayBillOnline",
       Amount: Math.round(Number(amount)),
       PartyA: normalizedPhone,
-      PartyB,
+      PartyB: SHORTCODE,
       PhoneNumber: normalizedPhone,
       CallBackURL: CALLBACK_URL,
-      AccountReference: account_reference || "Harambee",
-      TransactionDesc: transaction_desc || "Harambee Donation",
+      AccountReference: account_reference?.slice(0, 12) || "Harambee",
+      TransactionDesc: transaction_desc?.slice(0, 13) || "Harambee Donation",
     };
 
     const stkRes = await fetch(`${BASE_URL}/mpesa/stkpush/v1/processrequest`, {
@@ -70,34 +98,33 @@ mpesaRouter.post("/stkpush", async (req, res) => {
 
     const stkData = await stkRes.json();
 
-    if (stkData.ResponseCode === "0" && donation_id) {
+    if (ENV === "sandbox" && stkData.ResponseCode === "0" && donation_id) {
       const db = requireService();
+
       await db
         .from("donations")
         .update({ checkout_request_id: stkData.CheckoutRequestID })
         .eq("id", donation_id);
 
-      if (ENV === "sandbox") {
-        const { data: donation } = await db
+      const { data: donation } = await db
+        .from("donations")
+        .select("id, campaign_id, amount")
+        .eq("id", donation_id)
+        .single();
+
+      if (donation) {
+        await db
           .from("donations")
-          .select("id, campaign_id, amount")
-          .eq("id", donation_id)
-          .single();
+          .update({
+            status: "completed",
+            receipt_number: `SANDBOX-${Date.now()}`,
+          })
+          .eq("id", donation.id);
 
-        if (donation) {
-          await db
-            .from("donations")
-            .update({
-              status: "completed",
-              receipt_number: `SANDBOX-${Date.now()}`,
-            })
-            .eq("id", donation.id);
-
-          await db.rpc("increment_campaign_raised", {
-            campaign_id: donation.campaign_id,
-            amount: Number(donation.amount),
-          });
-        }
+        await db.rpc("increment_campaign_raised", {
+          campaign_id: donation.campaign_id,
+          amount: Number(donation.amount),
+        });
       }
     }
 
@@ -168,14 +195,29 @@ mpesaRouter.post("/callback", async (req, res) => {
 mpesaRouter.get("/status/:checkoutRequestId", async (req, res) => {
   try {
     const { checkoutRequestId } = req.params;
+
+    if (ENV === "sandbox") {
+      const db = requireService();
+      const { data: donation } = await db
+        .from("donations")
+        .select("status, receipt_number")
+        .eq("checkout_request_id", checkoutRequestId)
+        .single();
+
+      if (donation?.status === "completed") {
+        return res.json({ ResultCode: "0", status: "completed", receipt_number: donation.receipt_number });
+      }
+      return res.json({ status: "pending" });
+    }
+
     const accessToken = await getAccessToken();
-    const timestamp = new Date().toISOString().replace(/[^0-9]/g, "").slice(0, 14);
-    const password = Buffer.from(`${SHORTCODE}${PASSKEY}${timestamp}`).toString("base64");
+    const ts = timestamp();
+    const password = Buffer.from(`${SHORTCODE}${PASSKEY}${ts}`).toString("base64");
 
     const payload = {
       BusinessShortCode: SHORTCODE,
       Password: password,
-      Timestamp: timestamp,
+      Timestamp: ts,
       CheckoutRequestID: checkoutRequestId,
     };
 
@@ -189,20 +231,6 @@ mpesaRouter.get("/status/:checkoutRequestId", async (req, res) => {
     });
 
     const data = await statusRes.json();
-
-    if (ENV === "sandbox") {
-      const db = requireService();
-      const { data: donation } = await db
-        .from("donations")
-        .select("status, receipt_number")
-        .eq("checkout_request_id", checkoutRequestId)
-        .single();
-
-      if (donation?.status === "completed") {
-        return res.json({ ResultCode: "0", status: "completed", receipt_number: donation.receipt_number });
-      }
-    }
-
     res.json(data);
   } catch (err) {
     console.error("mpesa status error:", err);
