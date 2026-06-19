@@ -29,18 +29,9 @@ authRouter.post("/setup", async (req, res) => {
       return res.status(400).json({ error: "Setup already completed. An admin already exists." });
     }
 
-    const inviteCode = process.env.ADMIN_INVITE_CODE;
-    if (!inviteCode) {
-      return res.status(500).json({ error: "ADMIN_INVITE_CODE not configured on server" });
-    }
-
-    const { email, password, name, code } = req.body;
-    if (!email || !password || !name || !code) {
-      return res.status(400).json({ error: "email, password, name, and invite code required" });
-    }
-
-    if (code !== inviteCode) {
-      return res.status(403).json({ error: "Invalid invite code" });
+    const { email, password, name } = req.body;
+    if (!email || !password || !name) {
+      return res.status(400).json({ error: "email, password, and name required" });
     }
 
     if (password.length < 6) {

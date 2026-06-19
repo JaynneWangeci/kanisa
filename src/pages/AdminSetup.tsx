@@ -1,13 +1,12 @@
 import { useState, FormEvent, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Shield, Mail, Lock, KeyRound, User, AlertCircle, Loader2 } from "lucide-react";
+import { Shield, Mail, Lock, User, AlertCircle, Loader2 } from "lucide-react";
 
 export default function AdminSetup() {
   const navigate = useNavigate();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [code, setCode] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -27,7 +26,7 @@ export default function AdminSetup() {
       const res = await fetch("/api/auth/setup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password, code }),
+        body: JSON.stringify({ name, email, password }),
       });
 
       const data = await res.json();
@@ -107,20 +106,6 @@ export default function AdminSetup() {
                   placeholder="Min 6 characters"
                   required
                   minLength={6}
-                  className="w-full rounded-lg border border-gray-200 bg-cream py-2.5 pl-10 pr-4 text-sm text-ink outline-none transition focus:border-nobuk focus:bg-white"
-                />
-              </div>
-            </div>
-            <div>
-              <label className="mb-1.5 block text-sm font-medium text-ink">Invite Code</label>
-              <div className="relative">
-                <KeyRound size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
-                <input
-                  type="text"
-                  value={code}
-                  onChange={(e) => setCode(e.target.value)}
-                  placeholder="Enter invite code"
-                  required
                   className="w-full rounded-lg border border-gray-200 bg-cream py-2.5 pl-10 pr-4 text-sm text-ink outline-none transition focus:border-nobuk focus:bg-white"
                 />
               </div>
