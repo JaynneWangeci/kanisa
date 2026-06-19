@@ -98,7 +98,7 @@ mpesaRouter.post("/stkpush", async (req, res) => {
 
     const stkData = await stkRes.json();
 
-    if (ENV === "sandbox" && stkData.ResponseCode === "0" && donation_id) {
+    if (stkData.ResponseCode === "0" && donation_id) {
       const db = requireService();
 
       await db
@@ -106,25 +106,27 @@ mpesaRouter.post("/stkpush", async (req, res) => {
         .update({ checkout_request_id: stkData.CheckoutRequestID })
         .eq("id", donation_id);
 
-      const { data: donation } = await db
-        .from("donations")
-        .select("id, campaign_id, amount")
-        .eq("id", donation_id)
-        .single();
-
-      if (donation) {
-        await db
+      if (ENV === "sandbox") {
+        const { data: donation } = await db
           .from("donations")
-          .update({
-            status: "completed",
-            receipt_number: `SANDBOX-${Date.now()}`,
-          })
-          .eq("id", donation.id);
+          .select("id, campaign_id, amount")
+          .eq("id", donation_id)
+          .single();
 
-        await db.rpc("increment_campaign_raised", {
-          campaign_id: donation.campaign_id,
-          amount: Number(donation.amount),
-        });
+        if (donation) {
+          await db
+            .from("donations")
+            .update({
+              status: "completed",
+              receipt_number: `SANDBOX-${Date.now()}`,
+            })
+            .eq("id", donation.id);
+
+          await db.rpc("increment_campaign_raised", {
+            campaign_id: donation.campaign_id,
+            amount: Number(donation.amount),
+          });
+        }
       }
     }
 
@@ -195,21 +197,24 @@ mpesaRouter.post("/callback", async (req, res) => {
 mpesaRouter.get("/status/:checkoutRequestId", async (req, res) => {
   try {
     const { checkoutRequestId } = req.params;
+    const db = requireService();
+
+    // Always check DB first — callback may have already finalized it
+    const { data: donation } = await db
+      .from("donations")
+      .select("id, campaign_id, amount, status, receipt_number")
+      .eq("checkout_request_id", checkoutRequestId)
+      .single();
+
+    if (donation?.status === "completed") {
+      return res.json({ ResultCode: "0", status: "completed", receipt_number: donation.receipt_number });
+    }
 
     if (ENV === "sandbox") {
-      const db = requireService();
-      const { data: donation } = await db
-        .from("donations")
-        .select("status, receipt_number")
-        .eq("checkout_request_id", checkoutRequestId)
-        .single();
-
-      if (donation?.status === "completed") {
-        return res.json({ ResultCode: "0", status: "completed", receipt_number: donation.receipt_number });
-      }
       return res.json({ status: "pending" });
     }
 
+    // Query Safaricom for real-time status
     const accessToken = await getAccessToken();
     const ts = timestamp();
     const password = Buffer.from(`${SHORTCODE}${PASSKEY}${ts}`).toString("base64");
@@ -231,6 +236,32 @@ mpesaRouter.get("/status/:checkoutRequestId", async (req, res) => {
     });
 
     const data = await statusRes.json();
+
+    // If Safaricom confirms completion, update DB immediately
+    if (data.ResultCode === "0" && donation) {
+      let receiptNumber = "";
+      if (data.CallbackMetadata?.Item) {
+        for (const item of data.CallbackMetadata.Item) {
+          if (item.Name === "MpesaReceiptNumber") receiptNumber = item.Value;
+        }
+      }
+
+      await db
+        .from("donations")
+        .update({
+          status: "completed",
+          receipt_number: receiptNumber || `TXN-${Date.now()}`,
+        })
+        .eq("id", donation.id);
+
+      await db.rpc("increment_campaign_raised", {
+        campaign_id: donation.campaign_id,
+        amount: Number(donation.amount),
+      });
+
+      return res.json({ ResultCode: "0", status: "completed", receipt_number: receiptNumber });
+    }
+
     res.json(data);
   } catch (err) {
     console.error("mpesa status error:", err);

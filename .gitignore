@@ -46,6 +46,7 @@ key.txt
 keyy.txt
 consumers.txt
 ver.txt
+safaricom.txt
 *.jpg
 *.png
 supabase/.temp/
