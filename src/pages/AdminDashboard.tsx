@@ -528,7 +528,8 @@ export default function AdminDashboard() {
                         </div>
                       </div>
                     );
-                </div>
+                      })}
+                  </div>
               ) : (
                 <p className="text-sm text-muted">No members yet. Add your first church member above.</p>
               )}
