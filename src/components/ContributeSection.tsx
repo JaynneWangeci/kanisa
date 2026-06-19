@@ -41,9 +41,8 @@ export default function ContributeSection() {
   const [members, setMembers] = useState<Member[]>(seedMembers);
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
   const [showModal, setShowModal] = useState(false);
-  const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [search, setSearch] = useState('');
-  const [donorName, setDonorName] = useState('');
+  const [inputValue, setInputValue] = useState('');
+  const [showSuggestions, setShowSuggestions] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const { ref, inView } = useInView();
 
@@ -57,15 +56,15 @@ export default function ContributeSection() {
   useEffect(() => {
     function handleClick(e: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-        setDropdownOpen(false);
+        setShowSuggestions(false);
       }
     }
     document.addEventListener('mousedown', handleClick);
     return () => document.removeEventListener('mousedown', handleClick);
   }, []);
 
-  const filtered = search
-    ? members.filter(m => m.name.toLowerCase().includes(search.toLowerCase()))
+  const filtered = inputValue
+    ? members.filter(m => m.name.toLowerCase().includes(inputValue.toLowerCase()))
     : members;
 
   const grouped = filtered.reduce((acc, m) => {
@@ -77,14 +76,14 @@ export default function ContributeSection() {
 
   function getSelectionTitle(): string {
     if (selectedMember) return `Honouring: ${selectedMember.name}`;
-    if (donorName.trim()) return `Giving in my name: ${donorName.trim()}`;
+    if (inputValue.trim()) return `Giving in my name: ${inputValue.trim()}`;
     return 'Give to the Harambee';
   }
 
   function handleContribute() {
     if (selectedMember) {
       setShowModal(true);
-    } else {
+    } else if (inputValue.trim()) {
       setSelectedMember({ id: 'general', name: 'General Harambee Fund', council: '' });
       setShowModal(true);
     }
@@ -108,74 +107,35 @@ export default function ContributeSection() {
           </div>
 
           <div ref={ref} className="mx-auto max-w-lg">
-            {/* Your Name (free text) */}
-            <div className="mb-4">
+            {/* Your name combobox */}
+            <div ref={dropdownRef} className="relative">
               <label className="mb-1.5 flex items-center gap-1.5 text-sm font-bold text-[#1f2a1d]">
-                <User size={14} className="text-[#85AB8B]" /> Your name <span className="font-normal text-[#4b5b47]">(optional)</span>
+                <User size={14} className="text-[#85AB8B]" /> Your name
               </label>
               <div className="relative">
                 <User size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#85AB8B]/60" />
                 <input
                   type="text"
-                  placeholder="e.g. Mary Wanjiku"
-                  value={donorName}
-                  onChange={e => { setDonorName(e.target.value); if (selectedMember) setSelectedMember(null); }}
-                  className="w-full rounded-2xl border-2 border-[#336443]/20 bg-white py-4 pl-11 pr-4 text-base text-[#1f2a1d] outline-none transition placeholder:text-[#4b5b47]/40 focus:border-[#336443]"
+                  placeholder="Type your name or search a member..."
+                  value={inputValue}
+                  onFocus={() => setShowSuggestions(true)}
+                  onChange={e => {
+                    setInputValue(e.target.value);
+                    if (selectedMember) setSelectedMember(null);
+                    setShowSuggestions(true);
+                  }}
+                  className="w-full rounded-2xl border-2 border-[#336443]/20 bg-white py-4 pl-11 pr-12 text-base text-[#1f2a1d] outline-none transition placeholder:text-[#4b5b47]/40 focus:border-[#336443]"
+                />
+                <ChevronDown
+                  size={18}
+                  className={`absolute right-4 top-1/2 -translate-y-1/2 text-[#85AB8B]/60 transition cursor-pointer ${showSuggestions ? 'rotate-180' : ''}`}
+                  onClick={() => setShowSuggestions(!showSuggestions)}
                 />
               </div>
-            </div>
 
-            {/* Divider */}
-            <div className="mb-4 flex items-center gap-3">
-              <div className="h-px flex-1 bg-[#2d3a2a]/10" />
-              <span className="text-xs font-medium text-[#4b5b47]">OR</span>
-              <div className="h-px flex-1 bg-[#2d3a2a]/10" />
-            </div>
-
-            {/* Honour a Member Dropdown */}
-            <div ref={dropdownRef} className="relative">
-              <button
-                type="button"
-                onClick={() => setDropdownOpen(!dropdownOpen)}
-                className="flex w-full items-center gap-3 rounded-2xl border-2 border-[#336443]/20 bg-white p-4 shadow-sm text-left transition-all hover:border-[#336443]/40"
-              >
-                {selectedMember ? (
-                  <>
-                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#85AB8B]/20 text-sm font-bold text-[#336443]">
-                      {initials(selectedMember.name)}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-base font-bold text-[#1f2a1d]">{selectedMember.name}</p>
-                      <p className="text-xs text-[#4b5b47]">
-                        {councilMeta[selectedMember.council]?.label || selectedMember.council}
-                      </p>
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border-2 border-dashed border-[#85AB8B]/40 bg-[#85AB8B]/10 text-[#336443]">
-                      <Medal size={18} />
-                    </div>
-                    <span className="text-base font-medium text-[#4b5b47]">Honour a member (optional)</span>
-                  </>
-                )}
-                <ChevronDown size={20} className={`ml-auto shrink-0 text-[#336443] transition ${dropdownOpen ? 'rotate-180' : ''}`} />
-              </button>
-
-              {dropdownOpen && (
+              {/* Suggestions dropdown */}
+              {showSuggestions && (
                 <div className="absolute top-full left-0 right-0 z-20 mt-2 overflow-hidden rounded-2xl border border-[#2d3a2a]/10 bg-white shadow-xl animate-scale-in">
-                  <div className="border-b border-[#2d3a2a]/10 bg-[#85AB8B]/5 p-3">
-                    <div className="relative">
-                      <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#4b5b47]" />
-                      <input
-                        type="text"
-                        placeholder="Search members..."
-                        value={search}
-                        onChange={e => setSearch(e.target.value)}
-                        className="w-full rounded-lg border border-[#2d3a2a]/20 bg-white py-2.5 pl-9 pr-3 text-sm text-[#1f2a1d] placeholder-[#4b5b47]/50 outline-none focus:border-[#336443]"
-                      />
-                    </div>
-                  </div>
                   <div className="max-h-80 overflow-y-auto divide-y divide-[#2d3a2a]/5">
                     {councilOrder.map(council => {
                       const councilMembers = grouped[council];
@@ -196,7 +156,11 @@ export default function ContributeSection() {
                             <button
                               key={m.id}
                               type="button"
-                              onClick={() => { setSelectedMember(m); setDropdownOpen(false); setSearch(''); setDonorName(''); }}
+                              onClick={() => {
+                                setSelectedMember(m);
+                                setInputValue(m.name);
+                                setShowSuggestions(false);
+                              }}
                               className={`flex w-full items-center gap-3 px-4 py-3 text-left transition-all ${
                                 selectedMember?.id === m.id
                                   ? 'bg-[#85AB8B]/20 font-bold'
@@ -225,7 +189,7 @@ export default function ContributeSection() {
                       <div className="px-4 py-12 text-center">
                         <Search size={24} className="mx-auto mb-2 text-[#85AB8B]/30" />
                         <p className="text-sm font-medium text-[#4b5b47]">No members found</p>
-                        <p className="text-xs text-[#4b5b47]/60">Try a different search term</p>
+                        <p className="text-xs text-[#4b5b47]/60">Using "{inputValue}" as your name</p>
                       </div>
                     )}
                   </div>
@@ -252,7 +216,7 @@ export default function ContributeSection() {
               </div>
             )}
 
-            {(donorName.trim() || selectedMember) && (
+            {(inputValue.trim() || selectedMember) && (
               <div className={`mt-4 flex items-center gap-3 rounded-xl border border-[#336443]/20 bg-[#85AB8B]/5 px-4 py-3 ${inView ? 'animate-fade-in' : 'opacity-0'}`}>
                 <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#336443]">
                   <Heart size={14} className="text-white" />
@@ -265,7 +229,7 @@ export default function ContributeSection() {
             <div className={`mt-8 text-center ${inView ? 'animate-fade-in' : 'opacity-0'}`} style={{ animationDelay: '0.2s' }}>
               <button
                 onClick={handleContribute}
-                disabled={!donorName.trim() && !selectedMember}
+                disabled={!inputValue.trim()}
                 className="btn-lift w-full rounded-full bg-[#1f2a1d] px-8 py-4 text-base font-bold text-white shadow-sm hover:bg-[#2a3827] disabled:cursor-not-allowed disabled:opacity-40"
               >
                 Continue to Give
@@ -287,8 +251,8 @@ export default function ContributeSection() {
       {showModal && selectedMember && (
         <DonationModal
           member={selectedMember}
-          donorName={donorName}
-          onClose={() => { setShowModal(false); setSelectedMember(null); setDonorName(''); }}
+          donorName={inputValue}
+          onClose={() => { setShowModal(false); setSelectedMember(null); setInputValue(''); }}
         />
       )}
     </>
