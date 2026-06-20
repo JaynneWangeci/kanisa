@@ -126,7 +126,7 @@ export default function PledgeForm({ onClose, onCreated, donorName: initialName 
           </div>
           <div>
             <h2 className="text-lg font-bold text-gray-900">{t('Make a Pledge', 'Weka Ahadi')}</h2>
-            <p className="text-xs text-gray-500">{t('Commit to give and track your progress', 'Jitolee kutoa na fuatilia maendeleo yako')}</p>
+            <p className="text-xs text-gray-500">{t('Make a pledge and track your progress', 'Weka ahadi na fuatilia maendeleo yako')}</p>
           </div>
         </div>
 

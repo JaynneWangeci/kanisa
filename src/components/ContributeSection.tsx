@@ -283,7 +283,7 @@ export default function ContributeSection() {
             <button type="button" onClick={() => setShowPledgeForm(true)}
               className="btn-lift inline-flex items-center gap-2 rounded-full border-2 border-[#5B9BD5]/30 bg-white px-8 py-4 text-base font-bold text-[#1E6F9F] shadow-sm hover:border-[#5B9BD5] hover:bg-blue-50 transition-all">
               <HandHeart size={20} />
-              {t('Make a Pledge — Commit & Track Your Giving', 'Weka Ahadi — Jitolee na Fuatilia Mchango Wako')}
+              {t('Make a Pledge — Track Your Giving', 'Weka Ahadi — Fuatilia Mchango Wako')}
             </button>
           </div>
         </div>

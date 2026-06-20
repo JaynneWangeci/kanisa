@@ -680,7 +680,7 @@ export default function DonationForm() {
                   <button type="button" onClick={() => setShowPledgeForm(true)}
                     className="btn-lift inline-flex items-center gap-2 rounded-full border-2 border-blue-200 bg-white px-6 py-3 text-sm font-bold text-blue-600 shadow-sm hover:border-blue-400 hover:bg-blue-50 transition-all">
                     <HandHeart size={18} />
-                    Make a Pledge — Commit & Track Your Giving
+                    Make a Pledge — Track Your Giving
                   </button>
                 </div>
               </form>

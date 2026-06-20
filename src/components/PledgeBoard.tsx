@@ -197,7 +197,7 @@ export default function PledgeBoard() {
 
   const sections: { key: Section; icon: typeof Medal; label: string; labelSw: string }[] = [
     { key: 'pledge', icon: HandHeart, label: 'Make a Pledge', labelSw: 'Weka Ahadi' },
-    { key: 'commit', icon: DollarSign, label: 'Commit/Pay Pledge', labelSw: 'Lipa Ahadi' },
+    { key: 'commit', icon: DollarSign, label: 'Redeem', labelSw: 'Komboa' },
     { key: 'track', icon: Search, label: 'Track Progress', labelSw: 'Fuatilia Maendeleo' },
   ];
 
@@ -292,17 +292,17 @@ export default function PledgeBoard() {
           </div>
         )}
 
-        {/* ── Section 2: Commit / Pay a Pledge ── */}
+        {/* ── Section 2: Redeem Pledge ── */}
         {activeSection === 'commit' && (
           <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
             <div className="text-center">
               <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
                 <DollarSign size={28} className="text-green-600" />
               </div>
-              <h3 className="mb-2 text-lg font-bold text-gray-900">{t('Commit / Pay Your Pledge', 'Lipa Ahadi Yako')}</h3>
+              <h3 className="mb-2 text-lg font-bold text-gray-900">{t('Redeem Your Pledge', 'Komboa Ahadi Yako')}</h3>
               <p className="mb-6 text-sm text-gray-500 max-w-md mx-auto">
-                {t('Search for your pledge by name and make a payment towards it.',
-                  'Tafuta ahadi yako kwa jina na ulipe kuelekea ahadi yako.')}
+                {t('Search for your pledge by name and redeem it.',
+                  'Tafuta ahadi yako kwa jina na uikomboe.')}
               </p>
             </div>
 
@@ -350,7 +350,7 @@ export default function PledgeBoard() {
                           {payingId !== p.id ? (
                             <button onClick={() => { setPayingId(p.id); setPayAmount(''); setPayReceipt(''); }}
                               className="mt-3 flex items-center gap-1.5 rounded-lg bg-green-600 px-4 py-2 text-xs font-bold text-white hover:bg-green-700 transition-all">
-                              <DollarSign size={14} /> {t('Commit / Pay Now', 'Lipa Sasa')}
+                              <DollarSign size={14} /> {t('Redeem Now', 'Komboa Sasa')}
                             </button>
                           ) : (
                             <div className="mt-3 rounded-lg border border-green-200 bg-green-50 p-3 space-y-2">
