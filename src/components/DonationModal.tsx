@@ -60,7 +60,15 @@ export default function DonationModal({ member, onClose, donorName: initialDonor
   }, []);
 
   const nameFiltered = nameSearch
-    ? memberList.filter(m => m.name.toLowerCase().includes(nameSearch.toLowerCase()))
+    ? memberList
+        .map(m => ({
+          ...m,
+          _score: m.name.toLowerCase() === nameSearch.toLowerCase() ? 3
+            : m.name.toLowerCase().startsWith(nameSearch.toLowerCase()) ? 2
+            : m.name.toLowerCase().includes(nameSearch.toLowerCase()) ? 1 : 0,
+        }))
+        .filter(m => m._score > 0)
+        .sort((a, b) => b._score - a._score || a.name.localeCompare(b.name))
     : memberList;
 
   function initials(n: string): string {
@@ -251,10 +259,10 @@ export default function DonationModal({ member, onClose, donorName: initialDonor
                     className="w-full rounded-xl border border-[#2C4056]/20 bg-white py-3 pl-9 pr-3 text-sm text-[#1B2838] outline-none transition focus:border-[#1E6F9F] placeholder:text-[#5B6F88]/40" />
                 </div>
 
-                {showNameDropdown && nameFiltered.length > 0 && (
+                {showNameDropdown && (
                   <div className="absolute top-full left-0 right-0 z-30 mt-1 overflow-hidden rounded-xl border border-[#2C4056]/10 bg-white shadow-lg">
                     <div className="max-h-48 overflow-y-auto divide-y divide-[#2C4056]/5">
-                      {nameFiltered.map(m => (
+                      {nameFiltered.length > 0 ? nameFiltered.map(m => (
                         <button key={m.id} type="button"
                           onClick={() => { setName(m.name); setShowNameDropdown(false); }}
                           className={`flex w-full items-center gap-3 px-4 py-2.5 text-left transition-all hover:bg-[#5B9BD5]/5 ${
@@ -268,7 +276,11 @@ export default function DonationModal({ member, onClose, donorName: initialDonor
                           <p className={`text-sm ${name === m.name ? 'text-[#1B2838]' : 'text-[#1B2838] font-medium'}`}>{m.name}</p>
                           {name === m.name && <Check size={14} className="ml-auto text-[#1E6F9F]" />}
                         </button>
-                      ))}
+                      )) : nameSearch.trim() && (
+                        <div className="px-4 py-4 text-center text-xs text-[#5B6F88]">
+                          Will be added as a new member
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}

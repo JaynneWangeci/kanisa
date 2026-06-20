@@ -79,11 +79,14 @@ export default function ContributeSection() {
     : members;
 
   const grouped = filtered.reduce((acc, m) => {
-    (acc[m.council] = acc[m.council] || []).push(m);
+    const key = m.council || 'other';
+    (acc[key] = acc[key] || []).push(m);
     return acc;
   }, {} as Record<string, Member[]>);
 
-  const councilOrder = ['parish_board', 'women_council', 'men_council', 'development'];
+  const councilOrder = Object.keys(councilMeta).filter(c => grouped[c]?.length);
+  const extraCouncils = Object.keys(grouped).filter(c => !councilMeta[c]);
+  const allCouncils = [...councilOrder, ...extraCouncils];
 
   function getSelectionTitle(): string {
     if (selectedMember) return `${t('Honouring', 'Kumheshimu')}: ${selectedMember.name}`;
@@ -163,10 +166,10 @@ export default function ContributeSection() {
               {showSuggestions && (
                 <div className="absolute top-full left-0 right-0 z-20 mt-2 overflow-hidden rounded-2xl border border-[#2C4056]/10 bg-white shadow-xl animate-scale-in">
                   <div className="max-h-64 overflow-y-auto divide-y divide-[#2C4056]/5">
-                    {councilOrder.map(council => {
+                    {allCouncils.map(council => {
                       const councilMembers = grouped[council];
                       if (!councilMembers?.length) return null;
-                      const meta = councilMeta[council] || { label: council, icon: Church, color: 'bg-[#2C4056] text-white' };
+                      const meta = councilMeta[council] || { label: council.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()), icon: Church, color: 'bg-[#2C4056] text-white' };
                       const Icon = meta.icon;
 
                       return (
@@ -211,9 +214,9 @@ export default function ContributeSection() {
                         </div>
                       );
                     })}
-                    {filtered.length === 0 && inputValue.trim() && (
+                    {allCouncils.every(c => !grouped[c]?.length) && inputValue.trim() && (
                       <div className="px-4 py-6 text-center">
-                        <p className="text-sm font-medium text-[#5B6F88]">Using "<span className="font-bold text-[#1B2838]">{inputValue}</span>" as your name</p>
+                        <p className="text-sm font-medium text-[#5B6F88]">Will be added as a new member: "<span className="font-bold text-[#1B2838]">{inputValue}</span>"</p>
                       </div>
                     )}
                   </div>
