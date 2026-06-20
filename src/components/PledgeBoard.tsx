@@ -465,7 +465,10 @@ export default function PledgeBoard() {
                         <div key={h.id} className="flex items-center justify-between rounded-lg bg-amber-50 px-3 py-2 mb-1">
                           <div className="flex items-center gap-2">
                             <Heart size={12} className="text-amber-500" />
-                            <span className="text-xs text-gray-700">{h.donor_name || t('Anonymous', 'Hakujulikana')}</span>
+                            <div>
+                              <span className="text-xs text-gray-700">{h.donor_name || t('Anonymous', 'Hakujulikana')}</span>
+                              {h.phone && <p className="text-[10px] text-gray-400">{h.phone}</p>}
+                            </div>
                           </div>
                           <span className="text-xs font-bold text-amber-700">KES {Number(h.amount).toLocaleString()}</span>
                         </div>

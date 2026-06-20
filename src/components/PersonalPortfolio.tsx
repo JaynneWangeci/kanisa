@@ -213,6 +213,7 @@ export default function PersonalPortfolio({ name, onClose }: Props) {
                       <div>
                         <p className="text-sm font-bold text-gray-900">{h.donor_name || 'Anonymous'}</p>
                         <p className="text-xs text-gray-400">{new Date(h.created_at).toLocaleDateString()}</p>
+                        {h.phone && <p className="text-[10px] text-gray-400">{h.phone}</p>}
                       </div>
                     </div>
                     <span className="text-sm font-bold text-amber-700">KES {Number(h.amount).toLocaleString()}</span>

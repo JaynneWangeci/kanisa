@@ -14,7 +14,7 @@ ledgerRouter.get("/export", requireAdmin, async (req, res) => {
     const db = requireService();
     const { data, error } = await db
       .from("donations")
-      .select("id, donor_name, amount, method, status, receipt_number, message, honored_member_id, church_member_id, created_at, campaign_id")
+      .select("id, donor_name, amount, method, status, receipt_number, phone, message, honored_member_id, church_member_id, created_at, campaign_id")
       .eq("status", "completed")
       .order("created_at", { ascending: false });
 

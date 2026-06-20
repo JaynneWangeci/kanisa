@@ -84,7 +84,7 @@ pledgesRouter.get("/:name", async (req, res) => {
 
     const { data: honoured } = await db
       .from("donations")
-      .select("id, donor_name, amount, created_at, church_members!inner(name)")
+      .select("id, donor_name, amount, phone, created_at, church_members!inner(name)")
       .eq("status", "completed")
       .ilike("church_members.name", `%${req.params.name}%`)
       .order("created_at", { ascending: false });
@@ -117,7 +117,7 @@ pledgesRouter.get("/search/name", async (req, res) => {
 
     const { data: honoured } = await db
       .from("donations")
-      .select("id, donor_name, amount, created_at, church_members!inner(name)")
+      .select("id, donor_name, amount, phone, created_at, church_members!inner(name)")
       .eq("status", "completed")
       .ilike("church_members.name", `%${q}%`)
       .order("created_at", { ascending: false });

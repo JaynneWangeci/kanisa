@@ -85,7 +85,7 @@ remindersRouter.get("/portfolio", async (req, res) => {
       // donations where honored_member_id matches (donations in honour of this person)
       memberIds.length ? db.from("donations").select("id, donor_name, amount, status, receipt_number, phone, created_at").eq("status", "completed").in("honored_member_id", memberIds).order("created_at", { ascending: false }) : { data: [] },
       // people who honoured this person (donations where their name is the honoured person)
-      db.from("donations").select("id, donor_name, amount, created_at, church_members!inner(name)").eq("status", "completed").ilike("church_members.name", `%${q}%`).order("created_at", { ascending: false }),
+      db.from("donations").select("id, donor_name, amount, phone, created_at, church_members!inner(name)").eq("status", "completed").ilike("church_members.name", `%${q}%`).order("created_at", { ascending: false }),
     ]);
 
     const pledges = pledgesRes.data || [];
