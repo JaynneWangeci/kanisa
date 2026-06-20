@@ -72,6 +72,10 @@ export default function AdminDashboard() {
   const [newCouncilName, setNewCouncilName] = useState("");
   const [councilMgmtError, setCouncilMgmtError] = useState("");
   const [councilMgmtMsg, setCouncilMgmtMsg] = useState("");
+  const [harambeeDate, setHarambeeDate] = useState("2026-09-27");
+  const [harambeeDays, setHarambeeDays] = useState(0);
+  const [editingHarambeeDate, setEditingHarambeeDate] = useState(false);
+  const [editHarambeeDateVal, setEditHarambeeDateVal] = useState("");
   const [editingCom, setEditingCom] = useState<CommitteeMember | null>(null);
   const [editComName, setEditComName] = useState("");
   const [editComRole, setEditComRole] = useState("");
@@ -168,6 +172,17 @@ export default function AdminDashboard() {
     if (data.length) setCouncils(data);
   }, []);
 
+  const loadHarambee = useCallback(async () => {
+    try {
+      const res = await fetch("/api/settings/harambee");
+      if (res.ok) {
+        const data = await res.json();
+        setHarambeeDate(data.date);
+        setHarambeeDays(data.days_remaining);
+      }
+    } catch { /* silent */ }
+  }, []);
+
   useEffect(() => { checkAuth(); }, [checkAuth]);
   useEffect(() => {
     if (!admin) return;
@@ -179,7 +194,8 @@ export default function AdminDashboard() {
     fetchAnalytics();
     fetchCommittee();
     loadCouncils();
-  }, [admin, fetchStats, fetchLogs, fetchMembers, fetchAdmins, fetchAnalytics, fetchCommittee, loadCouncils]);
+    loadHarambee();
+  }, [admin, fetchStats, fetchLogs, fetchMembers, fetchAdmins, fetchAnalytics, fetchCommittee, loadCouncils, loadHarambee]);
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
@@ -399,7 +415,7 @@ export default function AdminDashboard() {
             <p className="text-xs text-muted">{admin.name} &middot; {admin.role.replace("_", " ")}</p>
           </div>
           <div className="flex items-center gap-3">
-            <button onClick={() => { fetchStats(); fetchLogs(); fetchMembers(); fetchAdmins(); fetchAnalytics(); fetchCommittee(); loadCouncils(); }} className="rounded-lg p-2 text-muted transition hover:bg-cream" title="Refresh">
+            <button onClick={() => { fetchStats(); fetchLogs(); fetchMembers(); fetchAdmins(); fetchAnalytics(); fetchCommittee(); loadCouncils(); loadHarambee(); }} className="rounded-lg p-2 text-muted transition hover:bg-cream" title="Refresh">
               <RefreshCw size={16} />
             </button>
             <a href="/" className="text-sm text-muted underline underline-offset-2 hover:text-nobuk">View Site</a>
@@ -449,7 +465,7 @@ export default function AdminDashboard() {
               }`}
             >
               <Users size={14} className="inline mr-1" />
-              Council ({committeeMembers.length})
+              Fellowship ({committeeMembers.length})
             </button>
           )}
           <button
@@ -474,7 +490,12 @@ export default function AdminDashboard() {
                     <span className="text-base font-normal text-muted"> / KES {(stats?.goal || 0).toLocaleString()}</span>
                   </p>
                 </div>
-                <div className="text-right"><p className="text-3xl font-bold text-nobuk">{progress}%</p></div>
+                <div className="text-right">
+                  <p className="text-3xl font-bold text-nobuk">{progress}%</p>
+                  {harambeeDays > 0 && (
+                    <p className="mt-1 text-xs font-bold text-amber-600">{harambeeDays} days remaining</p>
+                  )}
+                </div>
               </div>
               <div className="mt-3 h-2.5 w-full overflow-hidden rounded-full bg-nobuk-muted">
                 <div className="h-full rounded-full bg-nobuk transition-all duration-1000" style={{ width: `${progress}%` }} />
@@ -603,7 +624,7 @@ export default function AdminDashboard() {
                     className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm text-ink outline-none focus:border-nobuk" />
                 </div>
                 <div>
-                  <label className="mb-1 block text-xs font-bold text-muted">Council</label>
+                  <label className="mb-1 block text-xs font-bold text-muted">Fellowship</label>
                   <select value={newCouncil} onChange={(e) => setNewCouncil(e.target.value)}
                     className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm text-ink outline-none focus:border-nobuk">
                     {(councils.length ? councils : []).map(c => (
@@ -666,7 +687,7 @@ export default function AdminDashboard() {
                   <p className="mt-1 text-[10px] text-muted">PDF with one name per line or comma-separated</p>
                 </div>
                 <div>
-                  <label className="mb-1 block text-xs font-bold text-muted">Council for all</label>
+                  <label className="mb-1 block text-xs font-bold text-muted">Fellowship for all</label>
                   <select value={bulkCouncil} onChange={(e) => setBulkCouncil(e.target.value)}
                     className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm text-ink outline-none focus:border-nobuk">
                     {(councils.length ? councils : []).map(c => (
@@ -1005,9 +1026,9 @@ export default function AdminDashboard() {
             <div className="mb-4 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Settings size={16} className="text-nobuk" />
-                <h2 className="text-sm font-bold text-ink">Manage Councils</h2>
+                <h2 className="text-sm font-bold text-ink">Manage Fellowships</h2>
               </div>
-              <span className="text-xs text-muted">Rename, add, or delete councils</span>
+                <span className="text-xs text-muted">Rename, add, or delete fellowships</span>
             </div>
             {councilMgmtMsg && (
               <div className="mb-3 rounded-lg border border-green-300 bg-green-50 px-3 py-2 text-xs text-green-700">{councilMgmtMsg}</div>
@@ -1036,7 +1057,7 @@ export default function AdminDashboard() {
                       </button>
                       <button
                         onClick={async () => {
-                          if (!confirm(`Delete "${c.name}"? Members using this council must be reassigned first.`)) return;
+                          if (!confirm(`Delete "${c.name}"? Members using this fellowship must be reassigned first.`)) return;
                           setCouncilMgmtError(""); setCouncilMgmtMsg("");
                           try {
                             const res = await fetch(`/api/councils/${c.slug}`, {
@@ -1096,9 +1117,57 @@ export default function AdminDashboard() {
                 </div>
               ))}
             </div>
+            {/* Harambee event date */}
+            <div className="mb-4 border-t border-gray-200 pt-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-bold text-ink uppercase tracking-wider">Harambee Event Date</p>
+                  <p className="mt-1 text-sm text-muted">
+                    {harambeeDate} {harambeeDays > 0 ? `· ${harambeeDays} days remaining` : harambeeDays === 0 ? "· Today!" : "· Passed"}
+                  </p>
+                </div>
+                {!editingHarambeeDate ? (
+                  <button onClick={() => { setEditingHarambeeDate(true); setEditHarambeeDateVal(harambeeDate); }}
+                    className="rounded-lg px-2 py-1 text-xs text-muted hover:bg-white hover:text-nobuk">
+                    Change Date
+                  </button>
+                ) : (
+                  <div className="flex items-end gap-2">
+                    <div>
+                      <label className="mb-1 block text-xs font-bold text-muted">New date</label>
+                      <input type="date" value={editHarambeeDateVal} onChange={(e) => setEditHarambeeDateVal(e.target.value)}
+                        className="rounded-lg border border-gray-200 px-3 py-2 text-sm text-ink outline-none focus:border-nobuk" />
+                    </div>
+                    <button onClick={async () => {
+                      if (!editHarambeeDateVal) return;
+                      try {
+                        const res = await fetch("/api/settings", {
+                          method: "PUT",
+                          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+                          body: JSON.stringify({ harambee_date: editHarambeeDateVal }),
+                        });
+                        if (res.ok) {
+                          setHarambeeDate(editHarambeeDateVal);
+                          setEditingHarambeeDate(false);
+                          loadHarambee();
+                        }
+                      } catch {}
+                    }}
+                      className="rounded-lg bg-nobuk px-3 py-2 text-xs font-semibold text-white hover:bg-nobuk-light">
+                      Save
+                    </button>
+                    <button onClick={() => setEditingHarambeeDate(false)}
+                      className="rounded-lg border border-gray-200 px-3 py-2 text-xs text-muted hover:bg-white">
+                      Cancel
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+
             {/* Add new council */}
             <div className="border-t border-gray-200 pt-4">
-              <h3 className="mb-3 text-xs font-bold text-ink uppercase tracking-wider">Add New Council</h3>
+              <h3 className="mb-3 text-xs font-bold text-ink uppercase tracking-wider">Add New Fellowship</h3>
               <div className="flex items-end gap-3">
                 <div>
                   <label className="mb-1 block text-xs font-bold text-muted">Slug (auto-generated)</label>
@@ -1143,7 +1212,7 @@ export default function AdminDashboard() {
             <div className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm lg:col-span-1">
               <div className="mb-4 flex items-center gap-2">
                 <UserPlus size={16} className="text-nobuk" />
-                <h2 className="text-sm font-bold text-ink">Add Council Member</h2>
+                <h2 className="text-sm font-bold text-ink">Add Fellowship Member</h2>
               </div>
               <div className="space-y-4">
                 {comError && (
@@ -1162,7 +1231,7 @@ export default function AdminDashboard() {
                     className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm text-ink outline-none focus:border-nobuk" />
                 </div>
                 <div>
-                  <label className="mb-1 block text-xs font-bold text-muted">Council</label>
+                  <label className="mb-1 block text-xs font-bold text-muted">Fellowship</label>
                   <select value={newComCouncil} onChange={(e) => setNewComCouncil(e.target.value)}
                     className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm text-ink outline-none focus:border-nobuk">
                     {(councils.length ? councils : []).map(c => (
@@ -1200,7 +1269,7 @@ export default function AdminDashboard() {
             <div className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm lg:col-span-2">
               <div className="mb-4 flex items-center gap-2">
                 <Users size={16} className="text-nobuk" />
-                <h2 className="text-sm font-bold text-ink">Council Leadership</h2>
+                <h2 className="text-sm font-bold text-ink">Fellowship Leadership</h2>
                 <span className="text-xs text-muted">{committeeMembers.length} total</span>
               </div>
               {committeeMembers.length ? (
@@ -1274,7 +1343,7 @@ export default function AdminDashboard() {
                                         className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm text-ink outline-none focus:border-nobuk" />
                                     </div>
                                     <div>
-                                      <label className="mb-1 block text-xs font-bold text-muted">Council</label>
+                                      <label className="mb-1 block text-xs font-bold text-muted">Fellowship</label>
                                       <select value={editComCouncil} onChange={(e) => setEditComCouncil(e.target.value)}
                                         className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm text-ink outline-none focus:border-nobuk">
                                         <option value="parish_board">Parish Board</option>
@@ -1390,12 +1459,13 @@ export default function AdminDashboard() {
               {dashboardData ? (
                 <>
                   {/* ── KPI Cards ── */}
-                  <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                  <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
                     {[
                       { label: "Total Raised", value: `KES ${dashboardData.kpis.total_raised.toLocaleString("en-KE")}`, change: dashboardData.kpis.period_change, icon: TrendingUp, color: "bg-blue-600" },
                       { label: "Total Donations", value: dashboardData.kpis.total_donations.toLocaleString(), change: dashboardData.kpis.count_change, icon: DollarSign, color: "bg-emerald-600" },
                       { label: "Average Gift", value: `KES ${dashboardData.kpis.avg_gift.toLocaleString("en-KE")}`, icon: Users, color: "bg-violet-600" },
                       { label: "Pledge Fulfillment", value: `${dashboardData.pledges.fulfillment_rate}%`, subtitle: `${dashboardData.pledges.fulfilled}/${dashboardData.pledges.active + dashboardData.pledges.fulfilled} fulfilled`, icon: Target, color: "bg-amber-600" },
+                      { label: "Days Remaining", value: dashboardData.harambee ? `${dashboardData.harambee.days_remaining} days` : "—", subtitle: dashboardData.harambee?.passed ? "Event passed" : `Until ${dashboardData.harambee?.date || "27 Sep 2026"}`, icon: Clock, color: "bg-rose-600" },
                     ].map((k) => {
                       const Icon = k.icon;
                       return (

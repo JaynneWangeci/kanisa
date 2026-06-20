@@ -6,6 +6,7 @@ export default function LiveProgress() {
   const [raised, setRaised] = useState(0);
   const [goal, setGoal] = useState(30000000);
   const [displayRaised, setDisplayRaised] = useState(0);
+  const [harambeeDays, setHarambeeDays] = useState(0);
   const [width, setWidth] = useState(0);
   const barRef = useRef<HTMLDivElement>(null);
   const { ref, inView } = useInView();
@@ -17,6 +18,10 @@ export default function LiveProgress() {
     fetch('/api/campaigns/development-fund')
       .then(r => r.ok && r.json())
       .then(data => { if (data) { setRaised(Number(data.raised ?? 0)); setGoal(Number(data.goal ?? 30000000)); } })
+      .catch(() => {});
+    fetch('/api/settings/harambee')
+      .then(r => r.ok && r.json())
+      .then(data => { if (data) setHarambeeDays(data.days_remaining); })
       .catch(() => {});
 
     const interval = setInterval(() => {
@@ -159,8 +164,8 @@ export default function LiveProgress() {
             </div>
             <div className="text-center">
               <ExternalLink size={16} className="mx-auto mb-1 text-amber" />
-              <p className="text-lg font-bold text-amber tabular-nums">Live</p>
-              <p className="text-[10px] font-medium uppercase tracking-wider text-white/40">Auto-updating</p>
+              <p className="text-lg font-bold text-amber tabular-nums">{harambeeDays > 0 ? `${harambeeDays}d` : "—"}</p>
+              <p className="text-[10px] font-medium uppercase tracking-wider text-white/40">Days Left</p>
             </div>
           </div>
         </div>

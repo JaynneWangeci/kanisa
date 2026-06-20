@@ -68,6 +68,7 @@ export type AuditAction =
   | "view_church_members" | "create_church_member" | "update_church_member" | "delete_church_member"
   | "view_audit_logs"
   | "create_council" | "update_council" | "delete_council"
+  | "update_settings"
   | "create_admin" | "update_admin" | "delete_admin" | "update_self_password";
 
 export interface AuditLog {

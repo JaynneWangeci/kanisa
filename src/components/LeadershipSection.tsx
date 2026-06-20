@@ -75,7 +75,7 @@ export default function LeadershipSection() {
             Leadership
           </span>
           <h2 className="mt-4 font-heading text-3xl font-bold text-white md:text-4xl">
-            Committee Members
+            Fellowship Members
           </h2>
           <p className="mt-3 text-white/70">
             Honour a committee member with your contribution to the Harambee

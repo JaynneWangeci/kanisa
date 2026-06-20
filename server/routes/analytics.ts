@@ -220,6 +220,13 @@ analyticsRouter.get("/dashboard", requireAdmin, async (req, res) => {
       ipAddress: (req as any).adminIp,
     });
 
+    // Harambee event info
+    const { data: harambeeSetting } = await db.from("settings").select("*").eq("key", "harambee_date").single();
+    const harambeeDateStr = harambeeSetting?.value || "2026-09-27";
+    const harambeeEventDate = new Date(harambeeDateStr + "T23:59:59+03:00");
+    const harambeeDiffMs = harambeeEventDate.getTime() - Date.now();
+    const harambeeDaysRemaining = Math.max(0, Math.ceil(harambeeDiffMs / (1000 * 60 * 60 * 24)));
+
     const result = {
       kpis: {
         current30d_total: cur30Total,
@@ -252,6 +259,11 @@ analyticsRouter.get("/dashboard", requireAdmin, async (req, res) => {
         fulfilled: pledgeFulfilled,
         active: pledgeActive,
         fulfillment_rate: Math.round(pledgeFulfillmentRate * 10) / 10,
+      },
+      harambee: {
+        date: harambeeDateStr,
+        days_remaining: harambeeDaysRemaining,
+        passed: harambeeDiffMs < 0,
       },
     };
 

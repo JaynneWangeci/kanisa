@@ -17,6 +17,7 @@ import { contributionsRouter } from "./routes/contributions.js";
 import { pledgesRouter } from "./routes/pledges.js";
 import { remindersRouter } from "./routes/reminders.js";
 import { analyticsRouter } from "./routes/analytics.js";
+import { settingsRouter } from "./routes/settings.js";
 import { rateLimit } from "./lib/admin.js";
 import { startAllWorkers, stopAllWorkers } from "./lib/queue.js";
 
@@ -58,6 +59,7 @@ app.use("/api/contributions", contributionsRouter);
 app.use("/api/pledges", pledgesRouter);
 app.use("/api/reminders", remindersRouter);
 app.use("/api/analytics", rateLimit, analyticsRouter);
+app.use("/api/settings", settingsRouter);
 
 app.get("/api/health", (_req, res) => res.json({ ok: true }));
 
