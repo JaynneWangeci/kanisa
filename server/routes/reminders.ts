@@ -69,14 +69,34 @@ remindersRouter.get("/portfolio", async (req, res) => {
     const q = String(req.query.name || "").trim();
     if (!q) return res.status(400).json({ error: "name required" });
 
-    const [pledgesRes, donationsRes, honouredRes] = await Promise.all([
+    // Get matching member ids for sub-queries
+    const { data: matchingMembers } = await db
+      .from("church_members")
+      .select("id")
+      .ilike("name", `%${q}%`);
+    const memberIds = (matchingMembers || []).map(m => m.id);
+
+    const [pledgesRes, donationsByDonor, donationsByMember, donationsByHonour, honouredRes] = await Promise.all([
       db.from("pledges").select("*").ilike("donor_name", `%${q}%`).order("created_at", { ascending: false }),
-      db.from("donations").select("id, donor_name, amount, status, receipt_number, phone, created_at").eq("status", "completed").or(`donor_name.ilike.%${q}%,honored_member_id.in.(select id from church_members where name ilike '%${q}%')`).order("created_at", { ascending: false }),
-      db.from("donations").select("id, donor_name, amount, created_at, church_members!honored_member_id(name)").eq("status", "completed").not("honored_member_id", "is", null).filter("church_members.name", "ilike", `%${q}%`).order("created_at", { ascending: false }),
+      // donations where donor_name matches
+      db.from("donations").select("id, donor_name, amount, status, receipt_number, phone, created_at").eq("status", "completed").ilike("donor_name", `%${q}%`).order("created_at", { ascending: false }),
+      // donations where church_member_id matches (donor's member record)
+      memberIds.length ? db.from("donations").select("id, donor_name, amount, status, receipt_number, phone, created_at").eq("status", "completed").in("church_member_id", memberIds).order("created_at", { ascending: false }) : { data: [] },
+      // donations where honored_member_id matches (donations in honour of this person)
+      memberIds.length ? db.from("donations").select("id, donor_name, amount, status, receipt_number, phone, created_at").eq("status", "completed").in("honored_member_id", memberIds).order("created_at", { ascending: false }) : { data: [] },
+      // people who honoured this person (donations where their name is the honoured person)
+      db.from("donations").select("id, donor_name, amount, created_at, church_members!inner(name)").eq("status", "completed").ilike("church_members.name", `%${q}%`).order("created_at", { ascending: false }),
     ]);
 
     const pledges = pledgesRes.data || [];
-    const donations = donationsRes.data || [];
+
+    // Merge donations: de-duplicate by id
+    const donationMap = new Map();
+    for (const d of [...(donationsByDonor.data || []), ...((donationsByMember as any).data || []), ...((donationsByHonour as any).data || [])]) {
+      donationMap.set(d.id, d);
+    }
+    const donations = Array.from(donationMap.values());
+
     const honoured = honouredRes.data || [];
 
     const totalDonated = donations.reduce((s: number, d: any) => s + Number(d.amount), 0);
