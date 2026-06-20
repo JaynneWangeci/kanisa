@@ -14,13 +14,13 @@ interface MemberOption {
 }
 
 const councilMeta: Record<string, { label: string; icon: typeof Church }> = {
-  parish_board: { label: "Parish Board", icon: Church },
-  women_council: { label: "Women's Fellowship", icon: Users },
-  men_council: { label: "Men's Fellowship", icon: Users },
-  development: { label: "Development Committee", icon: Medal },
+  maranatha_fellowship: { label: "Maranatha Fellowship", icon: Church },
+  bethlehem_fellowship: { label: "Bethlehem Fellowship", icon: Users },
+  jerusalem_fellowship: { label: "Jerusalem Fellowship", icon: Users },
+  aefeso_fellowship: { label: "Aefeso Fellowship", icon: Medal },
 };
 
-const councilOrder = ["parish_board", "women_council", "men_council", "development"];
+const councilOrder = ["maranatha_fellowship", "bethlehem_fellowship", "jerusalem_fellowship", "aefeso_fellowship"];
 
 function formatPhone(value: string): string {
   const digits = value.replace(/\D/g, "").slice(0, 10);
@@ -278,7 +278,7 @@ export default function DonationForm() {
           await fetch('/api/members/auto-add', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name: donorName, council: 'development' }),
+            body: JSON.stringify({ name: donorName, council: 'aefeso_fellowship' }),
           });
           fetch('/api/members')
             .then(r => r.ok && r.json())
@@ -303,7 +303,7 @@ export default function DonationForm() {
         await fetch('/api/members/auto-add', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name: honName.trim(), council: 'development' }),
+          body: JSON.stringify({ name: honName.trim(), council: 'aefeso_fellowship' }),
         });
         fetch('/api/members')
           .then(r => r.ok && r.json())

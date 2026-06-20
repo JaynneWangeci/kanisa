@@ -21,13 +21,13 @@ const freqOptions = [
 ];
 
 const councilMeta: Record<string, { label: string; icon: typeof Church }> = {
-  parish_board: { label: 'Parish Board', icon: Church },
-  women_council: { label: "Women's Fellowship", icon: Users },
-  men_council: { label: "Men's Fellowship", icon: Users },
-  development: { label: 'Development Committee', icon: Medal },
+  maranatha_fellowship: { label: 'Maranatha Fellowship', icon: Church },
+  bethlehem_fellowship: { label: "Bethlehem Fellowship", icon: Users },
+  jerusalem_fellowship: { label: "Jerusalem Fellowship", icon: Users },
+  aefeso_fellowship: { label: 'Aefeso Fellowship', icon: Medal },
 };
 
-const councilOrder = ['parish_board', 'women_council', 'men_council', 'development'];
+const councilOrder = ['maranatha_fellowship', 'bethlehem_fellowship', 'jerusalem_fellowship', 'aefeso_fellowship'];
 
 export default function PledgeForm({ onClose, onCreated, donorName: initialName }: Props) {
   const { t } = useLang();
@@ -97,7 +97,7 @@ export default function PledgeForm({ onClose, onCreated, donorName: initialName 
         await fetch('/api/members/auto-add', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name: name.trim(), council: 'development' }),
+          body: JSON.stringify({ name: name.trim(), council: 'aefeso_fellowship' }),
         });
       } catch {}
       setAutoAdding(false);

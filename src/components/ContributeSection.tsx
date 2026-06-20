@@ -12,10 +12,10 @@ interface Member {
 }
 
 const councilMeta: Record<string, { label: string; icon: typeof Church; color: string }> = {
-  parish_board: { label: 'Parish Board', icon: Church, color: 'bg-[#1E6F9F] text-white' },
-  women_council: { label: "Women's Fellowship", icon: Users, color: 'bg-[#5B9BD5] text-white' },
-  men_council: { label: "Men's Fellowship", icon: Users, color: 'bg-[#3A5A7A] text-white' },
-  development: { label: 'Development Committee', icon: Medal, color: 'bg-[#2C4056] text-white' },
+  maranatha_fellowship: { label: 'Maranatha Fellowship', icon: Church, color: 'bg-[#1E6F9F] text-white' },
+  bethlehem_fellowship: { label: "Bethlehem Fellowship", icon: Users, color: 'bg-[#5B9BD5] text-white' },
+  jerusalem_fellowship: { label: "Jerusalem Fellowship", icon: Users, color: 'bg-[#3A5A7A] text-white' },
+  aefeso_fellowship: { label: 'Aefeso Fellowship', icon: Medal, color: 'bg-[#2C4056] text-white' },
 };
 
 function initials(name: string): string {
@@ -25,20 +25,20 @@ function initials(name: string): string {
 export default function ContributeSection() {
   const { t } = useLang();
   const seedMembers: Member[] = [
-    { id: '1', name: 'Dadson Mbogo', council: 'parish_board' },
-    { id: '2', name: 'Jeremiah Kimani', council: 'parish_board' },
-    { id: '3', name: 'Kariuki Nderitu', council: 'parish_board' },
-    { id: '4', name: 'Joseph Kamande', council: 'parish_board' },
-    { id: '5', name: 'Johnson Kamau', council: 'parish_board' },
-    { id: '6', name: 'George Kibia', council: 'parish_board' },
-    { id: '7', name: 'Magdalene Wageni', council: 'women_council' },
-    { id: '8', name: 'Alice Kuhunya', council: 'women_council' },
-    { id: '9', name: 'Tiffany Kimani', council: 'women_council' },
-    { id: '10', name: 'Esther Mbugua', council: 'women_council' },
-    { id: '11', name: 'Gilbert Wachira', council: 'men_council' },
-    { id: '12', name: "Sam Ndiang'ui", council: 'development' },
-    { id: '13', name: 'Wilson Thirikwa', council: 'development' },
-    { id: '14', name: 'Maria Goretti Njenga', council: 'development' },
+    { id: '1', name: 'Dadson Mbogo', council: 'maranatha_fellowship' },
+    { id: '2', name: 'Jeremiah Kimani', council: 'maranatha_fellowship' },
+    { id: '3', name: 'Kariuki Nderitu', council: 'maranatha_fellowship' },
+    { id: '4', name: 'Joseph Kamande', council: 'maranatha_fellowship' },
+    { id: '5', name: 'Johnson Kamau', council: 'maranatha_fellowship' },
+    { id: '6', name: 'George Kibia', council: 'maranatha_fellowship' },
+    { id: '7', name: 'Magdalene Wageni', council: 'bethlehem_fellowship' },
+    { id: '8', name: 'Alice Kuhunya', council: 'bethlehem_fellowship' },
+    { id: '9', name: 'Tiffany Kimani', council: 'bethlehem_fellowship' },
+    { id: '10', name: 'Esther Mbugua', council: 'bethlehem_fellowship' },
+    { id: '11', name: 'Gilbert Wachira', council: 'jerusalem_fellowship' },
+    { id: '12', name: "Sam Ndiang'ui", council: 'aefeso_fellowship' },
+    { id: '13', name: 'Wilson Thirikwa', council: 'aefeso_fellowship' },
+    { id: '14', name: 'Maria Goretti Njenga', council: 'aefeso_fellowship' },
   ];
 
   const [members, setMembers] = useState<Member[]>(seedMembers);
@@ -109,7 +109,7 @@ export default function ContributeSection() {
           await fetch('/api/members/auto-add', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name: inputValue.trim(), council: 'development' }),
+            body: JSON.stringify({ name: inputValue.trim(), council: 'aefeso_fellowship' }),
           });
           fetch('/api/members')
             .then(r => r.ok && r.json())

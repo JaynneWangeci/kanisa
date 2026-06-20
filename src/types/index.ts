@@ -102,15 +102,19 @@ export interface DashboardStats {
 }
 
 export const COUNCIL_LABELS: Record<string, string> = {
-  parish_board: "Parish Board",
-  women_council: "Women's Council",
-  men_council: "Men's Council",
-  development: "Development Committee",
+  maranatha_fellowship: "Maranatha Fellowship",
+  bethlehem_fellowship: "Bethlehem Fellowship",
+  jerusalem_fellowship: "Jerusalem Fellowship",
+  aefeso_fellowship: "Aefeso Fellowship",
+  galilee_fellowship: "Galilee Fellowship",
+  bethel_fellowship: "Bethel Fellowship",
+  berea_fellowship: "Berea Fellowship",
+  judea_fellowship: "Judea Fellowship",
 };
 
 export const DEFAULT_COUNCILS: Council[] = [
-  { slug: "parish_board", name: "Parish Board", is_active: true, created_at: "" },
-  { slug: "women_council", name: "Women's Council", is_active: true, created_at: "" },
-  { slug: "men_council", name: "Men's Council", is_active: true, created_at: "" },
-  { slug: "development", name: "Development Committee", is_active: true, created_at: "" },
+  { slug: "maranatha_fellowship", name: "Maranatha Fellowship", is_active: true, created_at: "" },
+  { slug: "bethlehem_fellowship", name: "Bethlehem Fellowship", is_active: true, created_at: "" },
+  { slug: "jerusalem_fellowship", name: "Jerusalem Fellowship", is_active: true, created_at: "" },
+  { slug: "aefeso_fellowship", name: "Aefeso Fellowship", is_active: true, created_at: "" },
 ];

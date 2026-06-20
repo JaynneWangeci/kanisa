@@ -32,10 +32,10 @@ export default function AdminDashboard() {
   const [tab, setTab] = useState<"overview" | "members" | "admins" | "analytics" | "council">("overview");
   const [churchMembers, setChurchMembers] = useState<ChurchMember[]>([]);
   const [newName, setNewName] = useState("");
-  const [newCouncil, setNewCouncil] = useState("parish_board");
+  const [newCouncil, setNewCouncil] = useState("maranatha_fellowship");
   const [memberError, setMemberError] = useState("");
   const [bulkNames, setBulkNames] = useState("");
-  const [bulkCouncil, setBulkCouncil] = useState("parish_board");
+  const [bulkCouncil, setBulkCouncil] = useState("maranatha_fellowship");
   const [bulkError, setBulkError] = useState("");
   const [bulkResult, setBulkResult] = useState("");
   const [admins, setAdmins] = useState<AdminUserRecord[]>([]);
@@ -63,7 +63,7 @@ export default function AdminDashboard() {
   const [committeeMembers, setCommitteeMembers] = useState<CommitteeMember[]>([]);
   const [newComName, setNewComName] = useState("");
   const [newComRole, setNewComRole] = useState("");
-  const [newComCouncil, setNewComCouncil] = useState("parish_board");
+  const [newComCouncil, setNewComCouncil] = useState("maranatha_fellowship");
   const [newComOrder, setNewComOrder] = useState("0");
   const [comError, setComError] = useState("");
   const [councils, setCouncils] = useState<Council[]>([]);
@@ -374,22 +374,19 @@ export default function AdminDashboard() {
   const councilLabels: Record<string, string> = {};
   for (const c of councils) councilLabels[c.slug] = c.name;
   if (!councils.length) {
-    councilLabels.parish_board = "Parish Board";
-    councilLabels.women_council = "Women's Fellowship";
-    councilLabels.men_council = "Men's Fellowship";
-    councilLabels.development = "Development Committee";
+    councilLabels.maranatha_fellowship = "Maranatha Fellowship";
+    councilLabels.bethlehem_fellowship = "Bethlehem Fellowship";
+    councilLabels.jerusalem_fellowship = "Jerusalem Fellowship";
+    councilLabels.aefeso_fellowship = "Aefeso Fellowship";
   }
 
   const labelToCouncil: Record<string, string> = {};
   for (const c of councils) labelToCouncil[c.name.toLowerCase()] = c.slug;
   if (!councils.length) {
-    labelToCouncil['parish board'] = 'parish_board';
-    labelToCouncil['women\'s council'] = 'women_council';
-    labelToCouncil['women council'] = 'women_council';
-    labelToCouncil['men\'s council'] = 'men_council';
-    labelToCouncil['men council'] = 'men_council';
-    labelToCouncil['development committee'] = 'development';
-    labelToCouncil['development'] = 'development';
+    labelToCouncil['maranatha fellowship'] = 'maranatha_fellowship';
+    labelToCouncil['bethlehem fellowship'] = 'bethlehem_fellowship';
+    labelToCouncil['jerusalem fellowship'] = 'jerusalem_fellowship';
+    labelToCouncil['aefeso fellowship'] = 'aefeso_fellowship';
   }
 
   function parseLine(line: string): { name: string; council: string } | null {
@@ -1256,7 +1253,7 @@ export default function AdminDashboard() {
                         body: JSON.stringify({ name: newComName.trim(), role: newComRole.trim(), council: newComCouncil, order: parseInt(newComOrder) || 0 }),
                       });
                       if (!res.ok) { const d = await res.json(); setComError(d.error || "Failed to add"); return; }
-                      setNewComName(""); setNewComRole(""); setNewComCouncil("parish_board"); setNewComOrder("0");
+                      setNewComName(""); setNewComRole(""); setNewComCouncil("maranatha_fellowship"); setNewComOrder("0");
                       fetchCommittee();
                     } catch { setComError("Connection issue"); }
                   }}
@@ -1275,7 +1272,7 @@ export default function AdminDashboard() {
               </div>
               {committeeMembers.length ? (
                 <div className="space-y-4">
-                  {(["parish_board", "women_council", "men_council", "development"] as const).map((council) => {
+                  {(["maranatha_fellowship", "bethlehem_fellowship", "jerusalem_fellowship", "aefeso_fellowship"] as const).map((council) => {
                     const filtered = committeeMembers.filter(m => m.council === council).sort((a, b) => a.order - b.order);
                     if (filtered.length === 0) return null;
                     return (
@@ -1347,10 +1344,10 @@ export default function AdminDashboard() {
                                       <label className="mb-1 block text-xs font-bold text-muted">Fellowship</label>
                                       <select value={editComCouncil} onChange={(e) => setEditComCouncil(e.target.value)}
                                         className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm text-ink outline-none focus:border-nobuk">
-                                        <option value="parish_board">Parish Board</option>
-                                        <option value="women_council">Women's Council</option>
-                                        <option value="men_council">Men's Council</option>
-                                        <option value="development">Development Committee</option>
+                                        <option value="maranatha_fellowship">Maranatha Fellowship</option>
+                                        <option value="bethlehem_fellowship">Bethlehem Fellowship</option>
+                                        <option value="jerusalem_fellowship">Jerusalem Fellowship</option>
+                                        <option value="aefeso_fellowship">Aefeso Fellowship</option>
                                       </select>
                                     </div>
                                     <div>

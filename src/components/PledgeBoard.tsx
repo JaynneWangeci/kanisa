@@ -18,10 +18,10 @@ interface Pledge {
 interface Member { id: string; name: string; council: string; }
 
 const councilMeta: Record<string, { label: string; icon: typeof Church; color: string }> = {
-  parish_board: { label: 'Parish Board', icon: Church, color: 'bg-blue-100 text-blue-600' },
-  women_council: { label: "Women's Fellowship", icon: Users, color: 'bg-pink-100 text-pink-600' },
-  men_council: { label: "Men's Fellowship", icon: Users, color: 'bg-indigo-100 text-indigo-600' },
-  development: { label: 'Development Committee', icon: Medal, color: 'bg-amber-100 text-amber-600' },
+  maranatha_fellowship: { label: 'Maranatha Fellowship', icon: Church, color: 'bg-blue-100 text-blue-600' },
+  bethlehem_fellowship: { label: "Bethlehem Fellowship", icon: Users, color: 'bg-pink-100 text-pink-600' },
+  jerusalem_fellowship: { label: "Jerusalem Fellowship", icon: Users, color: 'bg-indigo-100 text-indigo-600' },
+  aefeso_fellowship: { label: 'Aefeso Fellowship', icon: Medal, color: 'bg-amber-100 text-amber-600' },
 };
 
 function stars(rating: number) {

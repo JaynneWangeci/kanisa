@@ -12,27 +12,27 @@ interface Member {
 }
 
 const seedMembers: Member[] = [
-  { id: "1", name: "Dadson Mbogo", role: "Parish board chairman", council: "parish_board", photo_url: null },
-  { id: "2", name: "Jeremiah Kimani", role: "V Chairman", council: "parish_board", photo_url: null },
-  { id: "3", name: "Kariuki Nderitu", role: "General Secretary", council: "parish_board", photo_url: null },
-  { id: "4", name: "Joseph Kamande", role: "Vice General Secretary", council: "parish_board", photo_url: null },
-  { id: "5", name: "Johnson Kamau", role: "Treasurer", council: "parish_board", photo_url: null },
-  { id: "6", name: "George Kibia", role: "Vice Treasurer", council: "parish_board", photo_url: null },
-  { id: "7", name: "Magdalene Wageni", role: "Chairlady", council: "women_council", photo_url: null },
-  { id: "8", name: "Alice Kuhunya", role: "V Chairlady", council: "women_council", photo_url: null },
-  { id: "9", name: "Tiffany Kimani", role: "Women council Secretary", council: "women_council", photo_url: null },
-  { id: "10", name: "Esther Mbugua", role: "Women council Treasurer", council: "women_council", photo_url: null },
-  { id: "11", name: "Gilbert Wachira", role: "Men council chairman", council: "men_council", photo_url: null },
-  { id: "12", name: "Sam Ndiang'ui", role: "Development chairman", council: "development", photo_url: null },
-  { id: "13", name: "Wilson Thirikwa", role: "Development Secretary", council: "development", photo_url: null },
-  { id: "14", name: "Maria goretti Njenga", role: "Development Treasurer", council: "development", photo_url: null },
+  { id: "1", name: "Dadson Mbogo", role: "Maranatha Fellowship Chairman", council: "maranatha_fellowship", photo_url: null },
+  { id: "2", name: "Jeremiah Kimani", role: "V Chairman", council: "maranatha_fellowship", photo_url: null },
+  { id: "3", name: "Kariuki Nderitu", role: "General Secretary", council: "maranatha_fellowship", photo_url: null },
+  { id: "4", name: "Joseph Kamande", role: "Vice General Secretary", council: "maranatha_fellowship", photo_url: null },
+  { id: "5", name: "Johnson Kamau", role: "Treasurer", council: "maranatha_fellowship", photo_url: null },
+  { id: "6", name: "George Kibia", role: "Vice Treasurer", council: "maranatha_fellowship", photo_url: null },
+  { id: "7", name: "Magdalene Wageni", role: "Chairlady", council: "bethlehem_fellowship", photo_url: null },
+  { id: "8", name: "Alice Kuhunya", role: "V Chairlady", council: "bethlehem_fellowship", photo_url: null },
+  { id: "9", name: "Tiffany Kimani", role: "Secretary", council: "bethlehem_fellowship", photo_url: null },
+  { id: "10", name: "Esther Mbugua", role: "Treasurer", council: "bethlehem_fellowship", photo_url: null },
+  { id: "11", name: "Gilbert Wachira", role: "Chairman", council: "jerusalem_fellowship", photo_url: null },
+  { id: "12", name: "Sam Ndiang'ui", role: "Chairman", council: "aefeso_fellowship", photo_url: null },
+  { id: "13", name: "Wilson Thirikwa", role: "Secretary", council: "aefeso_fellowship", photo_url: null },
+  { id: "14", name: "Maria goretti Njenga", role: "Treasurer", council: "aefeso_fellowship", photo_url: null },
 ];
 
 const defaultCouncilLabels: Record<string, { label: string; icon: typeof Church; color: string }> = {
-  parish_board: { label: "Parish Board", icon: Church, color: "bg-nobuk-muted text-nobuk" },
-  women_council: { label: "Women's Fellowship", icon: Users, color: "bg-amber/20 text-amber-dark" },
-  men_council: { label: "Men's Fellowship", icon: Users, color: "bg-gray-200 text-muted" },
-  development: { label: "Development Committee", icon: Medal, color: "bg-amber-light text-amber-dark" },
+  maranatha_fellowship: { label: "Maranatha Fellowship", icon: Church, color: "bg-nobuk-muted text-nobuk" },
+  bethlehem_fellowship: { label: "Bethlehem Fellowship", icon: Users, color: "bg-amber/20 text-amber-dark" },
+  jerusalem_fellowship: { label: "Jerusalem Fellowship", icon: Users, color: "bg-gray-200 text-muted" },
+  aefeso_fellowship: { label: "Aefeso Fellowship", icon: Medal, color: "bg-amber-light text-amber-dark" },
 };
 
 const colorCycle = [Church, Users, Medal, Church, Users, Medal, Church, Users];

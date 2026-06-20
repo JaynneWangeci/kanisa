@@ -19,10 +19,10 @@ function formatPhone(value: string): string {
 }
 
 const councilMeta: Record<string, { label: string; icon: typeof Church }> = {
-  parish_board: { label: 'Parish Board', icon: Church },
-  women_council: { label: "Women's Fellowship", icon: Users },
-  men_council: { label: "Men's Fellowship", icon: Users },
-  development: { label: 'Development Committee', icon: Medal },
+  maranatha_fellowship: { label: 'Maranatha Fellowship', icon: Church },
+  bethlehem_fellowship: { label: "Bethlehem Fellowship", icon: Users },
+  jerusalem_fellowship: { label: "Jerusalem Fellowship", icon: Users },
+  aefeso_fellowship: { label: 'Aefeso Fellowship', icon: Medal },
 };
 
 interface Props {
@@ -98,7 +98,7 @@ export default function DonationModal({ member, onClose, donorName: initialDonor
         await fetch('/api/members/auto-add', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name: n.trim(), council: 'development' }),
+          body: JSON.stringify({ name: n.trim(), council: 'aefeso_fellowship' }),
         });
         fetch('/api/members')
           .then(r => r.ok && r.json())
