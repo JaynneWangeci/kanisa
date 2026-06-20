@@ -38,6 +38,10 @@ export default function AdminDashboard() {
   const [bulkCouncil, setBulkCouncil] = useState("maranatha_fellowship");
   const [bulkError, setBulkError] = useState("");
   const [bulkResult, setBulkResult] = useState("");
+  const [editingMember, setEditingMember] = useState<string | null>(null);
+  const [editMemberName, setEditMemberName] = useState("");
+  const [editMemberCouncil, setEditMemberCouncil] = useState("");
+  const [memberCouncilFilter, setMemberCouncilFilter] = useState("");
   const [admins, setAdmins] = useState<AdminUserRecord[]>([]);
   const [showAddAdmin, setShowAddAdmin] = useState(false);
   const [newAdminEmail, setNewAdminEmail] = useState("");
@@ -340,6 +344,18 @@ export default function AdminDashboard() {
       if (data.deduped > 0) fetchMembers();
     } catch { setDedupResult("Something went wrong. Please try again."); }
     finally { setDeduping(false); }
+  }
+
+  async function handleUpdateMember(id: string) {
+    if (!editMemberName.trim()) return;
+    try {
+      const res = await fetch(`/api/members/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ name: editMemberName.trim(), council: editMemberCouncil }),
+      });
+      if (res.ok) { setEditingMember(null); fetchMembers(); }
+    } catch {}
   }
 
   function handleLogout() {
@@ -720,7 +736,7 @@ export default function AdminDashboard() {
               {dedupResult && (
                 <div className="mb-3 rounded-lg border border-green-300 bg-green-50 px-3 py-2 text-xs text-green-700">{dedupResult}</div>
               )}
-              <div className="mb-4 flex items-center gap-2">
+              <div className="mb-4 flex flex-col gap-2 sm:flex-row">
                 <div className="relative flex-1">
                   <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
                   <input
@@ -731,6 +747,11 @@ export default function AdminDashboard() {
                     className="w-full rounded-lg border border-gray-200 bg-cream py-2.5 pl-9 pr-3 text-sm text-ink outline-none focus:border-nobuk"
                   />
                 </div>
+                <select value={memberCouncilFilter} onChange={e => setMemberCouncilFilter(e.target.value)}
+                  className="rounded-lg border border-gray-200 bg-cream px-3 py-2.5 text-sm text-ink outline-none focus:border-nobuk">
+                  <option value="">All Fellowships</option>
+                  {councils.map(c => <option key={c.slug} value={c.slug}>{c.name}</option>)}
+                </select>
                 {selectedMembers.size > 0 && (
                   <button onClick={handleBulkDelete}
                     className="flex items-center gap-1.5 rounded-lg bg-red-600 px-3 py-2 text-xs font-bold text-white hover:bg-red-700 transition">
@@ -741,6 +762,7 @@ export default function AdminDashboard() {
               {churchMembers.length ? (
                 <div className="space-y-4">
                   {Object.entries(groupedMembers).map(([council, councilMembers]) => {
+                    if (memberCouncilFilter && council !== memberCouncilFilter) return null;
                     const filteredCouncil = memberSearch
                       ? councilMembers.filter(m => m.name.toLowerCase().includes(memberSearch.toLowerCase()))
                       : councilMembers;
@@ -750,29 +772,57 @@ export default function AdminDashboard() {
                         <div className="mb-2 flex items-center gap-2">
                           <Church size={14} className="text-muted" />
                           <h3 className="text-xs font-bold text-muted uppercase tracking-wider">{councilLabels[council] || council}</h3>
-                          <span className="text-[10px] text-muted">{filteredCouncil.length}</span>
+                          <span className="text-[10px] text-muted">{filteredCouncil.length} members</span>
                         </div>
                         <div className="space-y-1">
-                           {filteredCouncil.map((m, i) => (
-                            <div key={m.id} className="flex items-center justify-between rounded-lg bg-cream px-3 py-2">
-                              <div className="flex items-center gap-3">
-                                <span className="w-5 text-center text-xs font-bold text-muted">{i + 1}.</span>
-                                <input type="checkbox" checked={selectedMembers.has(m.id)}
-                                  onChange={() => toggleMember(m.id)}
-                                  className="h-4 w-4 rounded border-gray-300 text-nobuk focus:ring-nobuk" />
-                                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-nobuk-muted text-xs font-bold text-nobuk">
-                                  {m.name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2)}
-                                </div>
-                                <div>
-                                  <p className="text-sm font-medium text-ink">{m.name}</p>
-                                </div>
+                          {filteredCouncil.map((m, i) => {
+                            const isEditing = editingMember === m.id;
+                            return (
+                              <div key={m.id} className="rounded-lg bg-cream px-3 py-2">
+                                {isEditing ? (
+                                  <div className="flex items-center gap-2">
+                                    <input type="text" value={editMemberName}
+                                      onChange={e => setEditMemberName(e.target.value)}
+                                      className="flex-1 rounded-md border border-gray-300 px-2 py-1.5 text-sm text-ink outline-none focus:border-nobuk" />
+                                    <select value={editMemberCouncil}
+                                      onChange={e => setEditMemberCouncil(e.target.value)}
+                                      className="rounded-md border border-gray-300 px-2 py-1.5 text-sm text-ink outline-none focus:border-nobuk">
+                                      {councils.map(c => <option key={c.slug} value={c.slug}>{c.name}</option>)}
+                                    </select>
+                                    <button onClick={() => handleUpdateMember(m.id)}
+                                      className="rounded-md bg-nobuk px-2.5 py-1.5 text-xs font-bold text-white hover:bg-nobuk-light">Save</button>
+                                    <button onClick={() => setEditingMember(null)}
+                                      className="rounded-md border border-gray-300 px-2.5 py-1.5 text-xs font-bold text-muted hover:bg-gray-100">Cancel</button>
+                                  </div>
+                                ) : (
+                                  <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-3 min-w-0 flex-1">
+                                      <span className="w-5 shrink-0 text-center text-xs font-bold text-muted">{i + 1}.</span>
+                                      <input type="checkbox" checked={selectedMembers.has(m.id)}
+                                        onChange={() => toggleMember(m.id)}
+                                        className="h-4 w-4 shrink-0 rounded border-gray-300 text-nobuk focus:ring-nobuk" />
+                                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-nobuk-muted text-xs font-bold text-nobuk">
+                                        {m.name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2)}
+                                      </div>
+                                      <div className="min-w-0">
+                                        <p className="text-sm font-medium text-ink truncate">{m.name}</p>
+                                      </div>
+                                    </div>
+                                    <div className="flex items-center gap-1 shrink-0">
+                                      <button onClick={() => { setEditingMember(m.id); setEditMemberName(m.name); setEditMemberCouncil(m.council); }}
+                                        className="rounded-lg p-1.5 text-muted transition hover:bg-blue-50 hover:text-blue-600" title="Edit">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
+                                      </button>
+                                      <button onClick={() => deleteMember(m.id)}
+                                        className="rounded-lg p-1.5 text-muted transition hover:bg-red-50 hover:text-red-600" title="Delete">
+                                        <Trash2 size={14} />
+                                      </button>
+                                    </div>
+                                  </div>
+                                )}
                               </div>
-                              <button onClick={() => deleteMember(m.id)}
-                                className="rounded-lg p-1.5 text-muted transition hover:bg-red-50 hover:text-red-600">
-                                <Trash2 size={14} />
-                              </button>
-                            </div>
-                          ))}
+                            );
+                          })}
                         </div>
                       </div>
                     );
