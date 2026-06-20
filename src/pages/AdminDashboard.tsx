@@ -10,8 +10,9 @@ import {
 import type { DashboardStats, AdminUser, ChurchMember, CommitteeMember, Council } from "../types";
 import { fetchCouncils, getCouncilLabel, clearCouncilCache } from "../lib/councils";
 import * as pdfjs from "pdfjs-dist";
+import pdfjsWorker from "pdfjs-dist/build/pdf.worker.min.mjs?url";
 
-pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@4.0.379/build/pdf.worker.min.mjs`;
+pdfjs.GlobalWorkerOptions.workerSrc = pdfjsWorker;
 
 interface AdminUserRecord {
   id: string;
