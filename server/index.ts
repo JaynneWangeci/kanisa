@@ -12,6 +12,7 @@ import { ledgerRouter } from "./routes/ledger.js";
 import { membersRouter } from "./routes/members.js";
 import { contributionsRouter } from "./routes/contributions.js";
 import { pledgesRouter } from "./routes/pledges.js";
+import { remindersRouter } from "./routes/reminders.js";
 import { rateLimit } from "./lib/admin.js";
 
 if (!process.env.VERCEL) {
@@ -35,6 +36,7 @@ app.use("/api/ledger", rateLimit, ledgerRouter);
 app.use("/api/members", membersRouter);
 app.use("/api/contributions", contributionsRouter);
 app.use("/api/pledges", pledgesRouter);
+app.use("/api/reminders", remindersRouter);
 
 app.get("/api/health", (_req, res) => res.json({ ok: true }));
 

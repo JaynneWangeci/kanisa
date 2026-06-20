@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Medal, Search, Heart } from 'lucide-react';
+import { Medal, Search, Heart, ExternalLink } from 'lucide-react';
 import { useLang } from '../context/LanguageContext';
+import PersonalPortfolio from './PersonalPortfolio';
 
 interface Pledge {
   id: string;
@@ -29,6 +30,7 @@ export default function PledgeBoard() {
   const [pledges, setPledges] = useState<Pledge[]>([]);
   const [search, setSearch] = useState('');
   const [result, setResult] = useState<{ pledges: Pledge[]; donated: any[]; honoured: any[] } | null>(null);
+  const [portfolioName, setPortfolioName] = useState<string | null>(null);
 
   useEffect(() => {
     fetch('/api/pledges')
@@ -63,7 +65,13 @@ export default function PledgeBoard() {
             </div>
             {result && (
               <div className="mt-3 rounded-xl border border-gray-100 bg-white p-4 text-left shadow-sm">
-                <p className="mb-2 text-xs font-bold text-gray-500 uppercase">{t('Your Profile', 'Wasifu Wako')}</p>
+                <div className="mb-2 flex items-center justify-between">
+                  <p className="text-xs font-bold text-gray-500 uppercase">{t('Your Profile', 'Wasifu Wako')}</p>
+                  <button onClick={() => setPortfolioName(search.trim())}
+                    className="flex items-center gap-1 text-xs font-bold text-blue-600 hover:text-blue-700 transition-colors">
+                    <ExternalLink size={12} /> {t('Full Portfolio', 'Wasifu Kamili')}
+                  </button>
+                </div>
                 {result.pledges.length > 0 && result.pledges.map(p => (
                   <div key={p.id} className="mb-2 rounded-lg bg-blue-50 p-3">
                     <div className="flex items-center justify-between">
@@ -154,6 +162,10 @@ export default function PledgeBoard() {
           )}
         </div>
       </div>
+
+      {portfolioName && (
+        <PersonalPortfolio name={portfolioName} onClose={() => setPortfolioName(null)} />
+      )}
     </section>
   );
 }

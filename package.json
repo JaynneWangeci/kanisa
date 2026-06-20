@@ -16,17 +16,18 @@
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "docx": "^9.7.1",
-    "pdfkit": "^0.15.0",
     "dotenv": "^17.4.2",
     "express": "^4.21.0",
     "jsonwebtoken": "^9.0.2",
     "lucide-react": "^0.400.0",
+    "pdfkit": "^0.15.0",
     "pptxgenjs": "^4.0.1",
     "react": "^19.0.0",
     "react-countup": "^6.5.3",
     "react-dom": "^19.0.0",
     "react-router-dom": "^7.0.0",
-    "serverless-http": "^3.2.0"
+    "serverless-http": "^3.2.0",
+    "twilio": "^6.0.2"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.0.0",
