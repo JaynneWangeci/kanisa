@@ -175,7 +175,7 @@ export default function AdminDashboard() {
       const res = await fetch("/api/members", {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ name: newName.trim(), council: newCouncil }),
+        body: JSON.stringify({ name: newName.trim().replace(/^\d+[\.\)]?\s*(?:[A-Za-z]\s+)?/, "").replace(/\.+$/, ""), council: newCouncil }),
       });
       if (!res.ok) { const d = await res.json(); setMemberError(d.error || "Something went wrong. Please try again."); return; }
       setNewName("");
@@ -335,14 +335,16 @@ export default function AdminDashboard() {
   function parseLine(line: string): { name: string; council: string } | null {
     const trimmed = line.trim();
     if (!trimmed) return null;
-    const match = trimmed.match(/^(.+?)\s*[,|]\s*(.+)$/) || trimmed.match(/^(.+?)\s*-\s*(.+)$/);
+    const cleaned = trimmed.replace(/^\d+[\.\)]?\s*(?:[A-Za-z]\s+)?/, "").replace(/\.+$/, "");
+    if (!cleaned) return null;
+    const match = cleaned.match(/^(.+?)\s*[,|]\s*(.+)$/) || cleaned.match(/^(.+?)\s*-\s*(.+)$/);
     if (match) {
       const name = match[1].trim();
       const councilLabel = match[2].trim().toLowerCase();
       const council = labelToCouncil[councilLabel];
       if (name && council) return { name, council };
     }
-    return { name: trimmed, council: bulkCouncil };
+    return { name: cleaned, council: bulkCouncil };
   }
 
   return (
