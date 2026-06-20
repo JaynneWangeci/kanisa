@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { Medal, Search, Heart, HandHeart, DollarSign, ExternalLink, Check, X } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { Medal, Search, Heart, HandHeart, DollarSign, ExternalLink, Check, X, Church, Users, User } from 'lucide-react';
 import { useLang } from '../context/LanguageContext';
 import PersonalPortfolio from './PersonalPortfolio';
 import PledgeForm from './PledgeForm';
@@ -15,6 +15,15 @@ interface Pledge {
   color_hex: string;
 }
 
+interface Member { id: string; name: string; council: string; }
+
+const councilMeta: Record<string, { label: string; icon: typeof Church; color: string }> = {
+  parish_board: { label: 'Parish Board', icon: Church, color: 'bg-blue-100 text-blue-600' },
+  women_council: { label: "Women's Council", icon: Users, color: 'bg-pink-100 text-pink-600' },
+  men_council: { label: "Men's Council", icon: Users, color: 'bg-indigo-100 text-indigo-600' },
+  development: { label: 'Development Committee', icon: Medal, color: 'bg-amber-100 text-amber-600' },
+};
+
 function stars(rating: number) {
   const colors = ['#EF4444', '#F97316', '#EAB308', '#22C55E', '#3B82F6'];
   return (
@@ -24,6 +33,10 @@ function stars(rating: number) {
       ))}
     </div>
   );
+}
+
+function initials(name: string) {
+  return name.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2);
 }
 
 type Section = 'pledge' | 'commit' | 'track';
@@ -46,12 +59,69 @@ export default function PledgeBoard() {
   const [payReceipt, setPayReceipt] = useState('');
   const [commitLoading, setCommitLoading] = useState(false);
 
+  // Member dropdown shared state
+  const [members, setMembers] = useState<Member[]>([]);
+  const trackDropdownRef = useRef<HTMLDivElement>(null);
+  const commitDropdownRef = useRef<HTMLDivElement>(null);
+  const [trackOpen, setTrackOpen] = useState(false);
+  const [commitOpen, setCommitOpen] = useState(false);
+
   useEffect(() => {
     fetch('/api/pledges')
       .then(r => r.ok && r.json())
       .then(d => { if (d?.pledges) setPledges(d.pledges); })
       .catch(() => {});
+    fetch('/api/members')
+      .then(r => r.ok && r.json())
+      .then(d => { if (d?.members?.length) setMembers(d.members); })
+      .catch(() => {});
   }, []);
+
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (trackDropdownRef.current && !trackDropdownRef.current.contains(e.target as Node)) setTrackOpen(false);
+      if (commitDropdownRef.current && !commitDropdownRef.current.contains(e.target as Node)) setCommitOpen(false);
+    }
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, []);
+
+  function scoreMember(name: string, query: string): number {
+    const n = name.toLowerCase();
+    const q = query.toLowerCase();
+    if (n === q) return 3;
+    if (n.startsWith(q)) return 2;
+    if (n.includes(q)) return 1;
+    return 0;
+  }
+
+  function filterMembers(members: Member[], query: string) {
+    if (!query) return members;
+    return members
+      .map(m => ({ ...m, _score: scoreMember(m.name, query) }))
+      .filter(m => (m as any)._score > 0)
+      .sort((a, b) => (b as any)._score - (a as any)._score || a.name.localeCompare(b.name));
+  }
+
+  const trackFiltered = filterMembers(members, search);
+  const trackGrouped = trackFiltered.reduce((acc: Record<string, Member[]>, m) => {
+    const key = m.council || 'other';
+    (acc[key] = acc[key] || []).push(m);
+    return acc;
+  }, {});
+  const trackCouncilOrder = Object.keys(councilMeta).filter(c => trackGrouped[c]?.length);
+  const trackExtra = Object.keys(trackGrouped).filter(c => !councilMeta[c]);
+  const trackAllCouncils = [...trackCouncilOrder, ...trackExtra];
+
+  const commitFiltered = filterMembers(members, commitSearch);
+  const commitGrouped = commitFiltered.reduce((acc: Record<string, Member[]>, m) => {
+    const key = m.council || 'other';
+    (acc[key] = acc[key] || []).push(m);
+    return acc;
+  }, {});
+  const commitCouncilOrder = Object.keys(councilMeta).filter(c => commitGrouped[c]?.length);
+  const commitExtra = Object.keys(commitGrouped).filter(c => !councilMeta[c]);
+  const commitAllCouncils = [...commitCouncilOrder, ...commitExtra];
 
   async function handleSearch() {
     if (!search.trim()) { setResult(null); return; }
@@ -79,6 +149,50 @@ export default function PledgeBoard() {
     });
     setPayingId(null); setPayAmount(''); setPayReceipt('');
     handleCommitSearch();
+  }
+
+  function renderDropdown(
+    open: boolean,
+    filtered: any[],
+    grouped: Record<string, Member[]>,
+    allCouncils: string[],
+    query: string,
+    onSelect: (name: string) => void,
+  ) {
+    if (!open) return null;
+    return (
+      <div className="absolute top-full left-0 right-0 z-20 mt-1 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-lg animate-scale-in">
+        <div className="max-h-48 overflow-y-auto divide-y divide-gray-100">
+          {allCouncils.length > 0 ? allCouncils.map(council => {
+            const councilMembers = grouped[council];
+            if (!councilMembers?.length) return null;
+            const meta = councilMeta[council] || { label: council.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()), icon: Church, color: 'bg-gray-100 text-gray-600' };
+            const Icon = meta.icon;
+            return (
+              <div key={council}>
+                <div className="sticky top-0 flex items-center gap-2 bg-gray-50 px-4 py-1.5">
+                  <Icon size={12} className="text-gray-500" />
+                  <span className="text-xs font-bold text-gray-600 uppercase tracking-wider">{meta.label}</span>
+                </div>
+                {councilMembers.map(m => (
+                  <button key={m.id} type="button" onClick={() => { onSelect(m.name); }}
+                    className="flex w-full items-center gap-3 px-4 py-2.5 text-left transition-all hover:bg-blue-50">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-200 text-xs font-bold text-gray-600">
+                      {initials(m.name)}
+                    </div>
+                    <p className="text-sm text-gray-900">{m.name}</p>
+                  </button>
+                ))}
+              </div>
+            );
+          }) : (
+            <div className="px-4 py-4 text-center text-xs text-gray-400">
+              {query.trim() ? `Will be added as: "${query}"` : 'Type to search...'}
+            </div>
+          )}
+        </div>
+      </div>
+    );
   }
 
   const sections: { key: Section; icon: typeof Medal; label: string; labelSw: string }[] = [
@@ -193,12 +307,14 @@ export default function PledgeBoard() {
             </div>
 
             <div className="mx-auto max-w-md">
-              <div className="relative">
+              <div ref={commitDropdownRef} className="relative">
                 <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
-                <input type="text" value={commitSearch} onChange={e => setCommitSearch(e.target.value)}
+                <input type="text" value={commitSearch} onChange={e => { setCommitSearch(e.target.value); setCommitOpen(true); }}
+                  onFocus={() => setCommitOpen(true)}
                   onKeyDown={e => e.key === 'Enter' && handleCommitSearch()}
                   placeholder={t('Search your name...', 'Tafuta jina lako...')}
                   className="w-full rounded-full border border-gray-200 bg-white py-3 pl-11 pr-4 text-sm text-gray-900 outline-none focus:border-green-500" />
+                {renderDropdown(commitOpen, commitFiltered, commitGrouped, commitAllCouncils, commitSearch, (name) => { setCommitSearch(name); setCommitOpen(false); handleCommitSearch(); })}
               </div>
               <button onClick={handleCommitSearch} disabled={commitLoading}
                 className="mt-3 w-full rounded-full bg-green-600 py-3 text-sm font-bold text-white hover:bg-green-700 transition-all disabled:opacity-50">
@@ -285,12 +401,14 @@ export default function PledgeBoard() {
             </div>
 
             <div className="mx-auto max-w-md">
-              <div className="relative">
+              <div ref={trackDropdownRef} className="relative">
                 <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
-                <input type="text" value={search} onChange={e => setSearch(e.target.value)}
+                <input type="text" value={search} onChange={e => { setSearch(e.target.value); setTrackOpen(true); }}
+                  onFocus={() => setTrackOpen(true)}
                   onKeyDown={e => e.key === 'Enter' && handleSearch()}
                   placeholder={t('Search your full name...', 'Tafuta jina lako kamili...')}
                   className="w-full rounded-full border border-gray-200 bg-white py-3 pl-11 pr-4 text-sm text-gray-900 outline-none focus:border-amber-500" />
+                {renderDropdown(trackOpen, trackFiltered, trackGrouped, trackAllCouncils, search, (name) => { setSearch(name); setTrackOpen(false); handleSearch(); })}
               </div>
               <button onClick={handleSearch}
                 className="mt-3 w-full rounded-full bg-amber-600 py-3 text-sm font-bold text-white hover:bg-amber-700 transition-all">

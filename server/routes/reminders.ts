@@ -71,7 +71,7 @@ remindersRouter.get("/portfolio", async (req, res) => {
 
     const [pledgesRes, donationsRes, honouredRes] = await Promise.all([
       db.from("pledges").select("*").ilike("donor_name", `%${q}%`).order("created_at", { ascending: false }),
-      db.from("donations").select("id, donor_name, amount, status, receipt_number, created_at").eq("status", "completed").or(`donor_name.ilike.%${q}%,church_member_id.in.(select id from church_members where name ilike '%${q}%')`).order("created_at", { ascending: false }),
+      db.from("donations").select("id, donor_name, amount, status, receipt_number, phone, created_at").eq("status", "completed").or(`donor_name.ilike.%${q}%,church_member_id.in.(select id from church_members where name ilike '%${q}%')`).order("created_at", { ascending: false }),
       db.from("donations").select("id, donor_name, amount, created_at, church_members!honored_member_id(name)").eq("status", "completed").not("honored_member_id", "is", null).filter("church_members.name", "ilike", `%${q}%`).order("created_at", { ascending: false }),
     ]);
 

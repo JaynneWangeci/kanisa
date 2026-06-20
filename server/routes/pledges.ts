@@ -110,7 +110,7 @@ pledgesRouter.get("/search/name", async (req, res) => {
 
     const { data: donations } = await db
       .from("donations")
-      .select("id, donor_name, amount, created_at, honored_member_id, receipt_number")
+      .select("id, donor_name, amount, created_at, honored_member_id, receipt_number, phone")
       .eq("status", "completed")
       .or(`donor_name.ilike.%${q}%,honored_member_id.in.(select id from church_members where name ilike '%${q}%')`)
       .order("created_at", { ascending: false });
