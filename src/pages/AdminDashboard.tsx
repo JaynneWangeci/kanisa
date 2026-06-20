@@ -658,9 +658,10 @@ export default function AdminDashboard() {
                           <span className="text-[10px] text-muted">{filteredCouncil.length}</span>
                         </div>
                         <div className="space-y-1">
-                          {filteredCouncil.map((m) => (
+                           {filteredCouncil.map((m, i) => (
                             <div key={m.id} className="flex items-center justify-between rounded-lg bg-cream px-3 py-2">
                               <div className="flex items-center gap-3">
+                                <span className="w-5 text-center text-xs font-bold text-muted">{i + 1}.</span>
                                 <input type="checkbox" checked={selectedMembers.has(m.id)}
                                   onChange={() => toggleMember(m.id)}
                                   className="h-4 w-4 rounded border-gray-300 text-nobuk focus:ring-nobuk" />
