@@ -8,8 +8,8 @@ const JWT_SECRET = process.env.JWT_SECRET || "change-me-in-production";
 const JWT_EXPIRES = "24h";
 
 // API rate limiting (per-IP)
-const RATE_LIMIT_WINDOW = 15 * 60 * 1000;
-const RATE_LIMIT_MAX = 100;
+const RATE_LIMIT_WINDOW = 60 * 1000;
+const RATE_LIMIT_MAX = 300;
 const reqCounts = new Map<string, { count: number; resetAt: number }>();
 
 export type AuditAction =
@@ -59,6 +59,27 @@ export async function setAdminContext(adminId: string, role: string) {
     await db.rpc("set_admin_context", { admin_id: adminId, role });
   } catch {
     // non-critical: RLS context is fallback
+  }
+}
+
+// ----- Simple In-Memory Cache ----- //
+
+interface CacheEntry { data: any; expiresAt: number; }
+const cache = new Map<string, CacheEntry>();
+const CACHE_TTL = 30 * 1000;
+
+export function getCached(key: string): any | null {
+  const entry = cache.get(key);
+  if (entry && Date.now() < entry.expiresAt) return entry.data;
+  cache.delete(key);
+  return null;
+}
+
+export function setCache(key: string, data: any, ttl = CACHE_TTL) {
+  cache.set(key, { data, expiresAt: Date.now() + ttl });
+  if (cache.size > 100) {
+    const first = cache.keys().next().value;
+    if (first) cache.delete(first);
   }
 }
 

@@ -80,10 +80,29 @@ export default function ContributeSection() {
     return 'Give to the Harambee';
   }
 
-  function handleContribute() {
+  const [autoAdding, setAutoAdding] = useState(false);
+
+  async function handleContribute() {
     if (selectedMember) {
       setShowModal(true);
     } else if (inputValue.trim()) {
+      // Auto-save typed names not in DB
+      const exists = members.some(m => m.name.toLowerCase() === inputValue.trim().toLowerCase());
+      if (!exists && inputValue.trim().length >= 2) {
+        setAutoAdding(true);
+        try {
+          await fetch('/api/members', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name: inputValue.trim(), council: 'development' }),
+          });
+          fetch('/api/members')
+            .then(r => r.ok && r.json())
+            .then(d => { if (d?.members?.length) setMembers(d.members); })
+            .catch(() => {});
+        } catch {}
+        setAutoAdding(false);
+      }
       setSelectedMember({ id: 'general', name: 'General Harambee Fund', council: '' });
       setShowModal(true);
     }
@@ -262,10 +281,10 @@ export default function ContributeSection() {
             <div className={`mt-8 text-center ${inView ? 'animate-fade-in' : 'opacity-0'}`} style={{ animationDelay: '0.2s' }}>
               <button
                 onClick={handleContribute}
-                disabled={!inputValue.trim()}
+                disabled={autoAdding || !inputValue.trim()}
                 className="btn-lift w-full rounded-full bg-[#1f2a1d] px-8 py-4 text-base font-bold text-white shadow-sm hover:bg-[#2a3827] disabled:cursor-not-allowed disabled:opacity-40"
               >
-                Continue to Give
+                {autoAdding ? 'Saving name...' : 'Continue to Give'}
               </button>
             </div>
           </div>

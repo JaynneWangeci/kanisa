@@ -66,7 +66,10 @@ export default function AdminDashboard() {
 
   const fetchStats = useCallback(async () => {
     try {
-      const res = await fetch("/api/admin/stats");
+      const token = localStorage.getItem("token");
+      const res = await fetch("/api/admin/stats", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       if (res.ok) setStats(await res.json());
     } catch { /* silent */ }
   }, []);
@@ -137,7 +140,7 @@ export default function AdminDashboard() {
 
   async function downloadExport(format: string) {
     const token = localStorage.getItem("token");
-    const url = format === "csv" ? "/api/ledger/export" : `/api/export/${format}`;
+    const url = format === "csv" ? "/api/ledger/export" : format === "pdf" ? "/api/contributions/export/pdf" : `/api/export/${format}`;
     try {
       const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
       if (!res.ok) return;

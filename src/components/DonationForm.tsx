@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { Check, Loader2, ChevronDown, Search, Phone, User, MessageSquare, Heart, Medal, Church, Users } from "lucide-react";
+import { Check, Loader2, ChevronDown, Search, Phone, User, MessageSquare, Heart, Medal, Church, Users, HandHeart } from "lucide-react";
 import { useInView } from "../hooks/useInView";
+import PledgeForm from "./PledgeForm";
 
 type Tab = "general" | "honour";
 type Step = "form" | "processing" | "success";
@@ -65,6 +66,7 @@ export default function DonationForm() {
   const [finalAmount, setFinalAmount] = useState(0);
   const [finalDonorName, setFinalDonorName] = useState("");
   const [finalHonouredMember, setFinalHonouredMember] = useState<MemberOption | null>(null);
+  const [showPledgeForm, setShowPledgeForm] = useState(false);
   const { ref, inView } = useInView();
 
   const selectedMember = members.find((m) => m.id === honoredMember);
@@ -657,7 +659,28 @@ export default function DonationForm() {
                   className="btn-lift w-full rounded-full bg-nobuk py-3.5 text-base font-bold text-white shadow-sm hover:bg-nobuk-light disabled:cursor-not-allowed disabled:opacity-40">
                   {honoredMember ? `Honour ${selectedMember?.name} with KES ${(honAmount === "custom" ? Number(honCustom) || 0 : honAmount || 0).toLocaleString()}` : "Select a member to honour"}
                 </button>
+
+                {/* Pledge section */}
+                <div className="mt-4 text-center">
+                  <div className="relative mb-3">
+                    <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-gray-200" /></div>
+                    <div className="relative flex justify-center"><span className="bg-white px-2 text-xs text-gray-400">or</span></div>
+                  </div>
+                  <button type="button" onClick={() => setShowPledgeForm(true)}
+                    className="btn-lift inline-flex items-center gap-2 rounded-full border-2 border-blue-200 bg-white px-6 py-3 text-sm font-bold text-blue-600 shadow-sm hover:border-blue-400 hover:bg-blue-50 transition-all">
+                    <HandHeart size={18} />
+                    Make a Pledge — Commit & Track Your Giving
+                  </button>
+                </div>
               </form>
+
+              {showPledgeForm && (
+                <PledgeForm
+                  donorName={honName || honoredMember ? selectedMember?.name : ''}
+                  onClose={() => setShowPledgeForm(false)}
+                  onCreated={() => {}}
+                />
+              )}
             )}
           </div>
         )}
