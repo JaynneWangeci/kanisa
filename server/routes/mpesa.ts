@@ -127,7 +127,7 @@ mpesaRouter.post("/stkpush", async (req, res) => {
       if (ENV === "sandbox") {
         const { data: donation } = await db
           .from("donations")
-          .select("id, campaign_id, amount")
+          .select("id, campaign_id, amount, phone, donor_name")
           .eq("id", donation_id)
           .single();
 
@@ -237,56 +237,54 @@ mpesaRouter.get("/status/:checkoutRequestId", async (req, res) => {
     }
 
     // Query Safaricom for real-time status
-    const accessToken = await getAccessToken();
-    const ts = timestamp();
-    const password = Buffer.from(`${SHORTCODE}${PASSKEY}${ts}`).toString("base64");
+    if (ENV !== "sandbox") {
+      const accessToken = await getAccessToken();
+      const ts = timestamp();
+      const password = Buffer.from(`${SHORTCODE}${PASSKEY}${ts}`).toString("base64");
 
-    const payload = {
-      BusinessShortCode: SHORTCODE,
-      Password: password,
-      Timestamp: ts,
-      CheckoutRequestID: checkoutRequestId,
-    };
+      const payload = {
+        BusinessShortCode: SHORTCODE,
+        Password: password,
+        Timestamp: ts,
+        CheckoutRequestID: checkoutRequestId,
+      };
 
-    const statusRes = await fetch(`${BASE_URL}/mpesa/stkpushquery/v1/query`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(payload),
-    });
-
-    const data = await statusRes.json();
-
-    // If Safaricom confirms completion, update DB immediately
-    if (String(data.ResultCode) === "0" && donation) {
-      let receiptNumber = "";
-      if (data.CallbackMetadata?.Item) {
-        for (const item of data.CallbackMetadata.Item) {
-          if (item.Name === "MpesaReceiptNumber") receiptNumber = item.Value;
-        }
-      }
-
-      await db
-        .from("donations")
-        .update({
-          status: "completed",
-          receipt_number: receiptNumber || `TXN-${Date.now()}`,
-        })
-        .eq("id", donation.id);
-
-      await db.rpc("increment_campaign_raised", {
-        campaign_id: donation.campaign_id,
-        amount: Number(donation.amount),
+      const statusRes = await fetch(`${BASE_URL}/mpesa/stkpushquery/v1/query`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
       });
 
-      whatsAppConfirmation({ ...donation, receipt_number: receiptNumber });
+      const data = await statusRes.json();
 
-      return res.json({ ResultCode: "0", status: "completed", receipt_number: receiptNumber });
+      // Only auto-complete if Safaricom confirms with a receipt number
+      const receiptNumber = data.CallbackMetadata?.Item
+        ?.find((item: any) => item.Name === "MpesaReceiptNumber")?.Value;
+
+      if (String(data.ResultCode) === "0" && receiptNumber && donation) {
+        await db
+          .from("donations")
+          .update({
+            status: "completed",
+            receipt_number: receiptNumber,
+          })
+          .eq("id", donation.id);
+
+        await db.rpc("increment_campaign_raised", {
+          campaign_id: donation.campaign_id,
+          amount: Number(donation.amount),
+        });
+
+        whatsAppConfirmation({ ...donation, receipt_number: receiptNumber });
+
+        return res.json({ ResultCode: "0", status: "completed", receipt_number: receiptNumber });
+      }
     }
 
-    res.json(data);
+    res.json({ status: "pending" });
   } catch (err) {
     console.error("mpesa status error:", err);
     res.status(500).json({ error: "Query failed" });

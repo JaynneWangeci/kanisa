@@ -13,25 +13,12 @@ export default function HomePage() {
 
   return (
     <main className="relative min-h-screen bg-white text-gray-900">
-      {/* Top language + theme bar */}
-      <div className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between border-b border-blue-100 bg-white/95 px-4 py-2 backdrop-blur-sm">
-        <div className="flex items-center gap-2">
-          <span className="text-xs font-bold text-blue-600">AIPCA Bahati</span>
-        </div>
-        <div className="flex items-center gap-3">
-          {/* Blue/White theme indicator */}
-          <div className="flex items-center gap-1">
-            <div className="h-3 w-3 rounded-full bg-blue-600" />
-            <div className="h-3 w-3 rounded-full border border-blue-300 bg-white" />
-          </div>
-          {/* Language toggle */}
-          <button onClick={() => setLang(lang === 'en' ? 'sw' : 'en')}
-            className="flex items-center gap-1.5 rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-bold text-blue-700 hover:bg-blue-100 transition-colors">
-            <Globe size={12} />
-            {lang === 'en' ? 'Kiswahili' : 'English'}
-          </button>
-        </div>
-      </div>
+      {/* Language toggle - top right */}
+      <button onClick={() => setLang(lang === 'en' ? 'sw' : 'en')}
+        className="fixed top-4 right-4 z-50 flex items-center gap-1.5 rounded-full border border-white/30 bg-white/90 px-3 py-1.5 text-xs font-bold text-[#1B2838] shadow-sm backdrop-blur-sm hover:bg-white transition-colors">
+        <Globe size={14} />
+        {lang === 'en' ? 'Kiswahili' : 'English'}
+      </button>
 
       <SlideshowBackground />
       <div className="relative z-10 pt-10">

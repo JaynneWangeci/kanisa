@@ -2,7 +2,7 @@
 // Redis-backed background jobs for heavy operations
 // Uses BullMQ for reliable job processing
 
-import { Queue, Worker, Job, QueueScheduler } from "bullmq";
+import { Queue, Worker, Job } from "bullmq";
 import { getRedis } from "./redis.js";
 import { requireService } from "./supabase.js";
 
