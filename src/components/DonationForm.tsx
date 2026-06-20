@@ -238,16 +238,53 @@ export default function DonationForm() {
     } catch (err: any) { setError(err?.message || "Network error. Please try again."); setStep("form"); }
   }
 
-  function handleGeneralSubmit(e: React.FormEvent) {
+  async function handleGeneralSubmit(e: React.FormEvent) {
     e.preventDefault();
+    const donorName = genMemberSearch.trim();
     const amount = genAmount === "custom" ? Number(genCustom) || 0 : genAmount || 0;
-    processDonation({ amount, donorName: genSelected?.name || "", phone: genPhone, message: genMessage });
+
+    // Auto-save typed name if not in DB
+    if (donorName) {
+      const exists = members.some(m => m.name.toLowerCase() === donorName.toLowerCase());
+      if (!exists && donorName.length >= 2) {
+        try {
+          await fetch('/api/members/auto-add', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name: donorName, council: 'development' }),
+          });
+          fetch('/api/members')
+            .then(r => r.ok && r.json())
+            .then(d => { if (d?.members?.length) setMembers(d.members); })
+            .catch(() => {});
+        } catch {}
+      }
+    }
+
+    processDonation({ amount, donorName, phone: genPhone, message: genMessage });
   }
 
-  function handleHonourSubmit(e: React.FormEvent) {
+  async function handleHonourSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!honoredMember) { setError("Kindly select a church member to honour"); return; }
     if (!honName.trim()) { setError("Kindly select your name"); return; }
+
+    // Auto-save typed name if not in DB
+    const exists = members.some(m => m.name.toLowerCase() === honName.trim().toLowerCase());
+    if (!exists && honName.trim().length >= 2) {
+      try {
+        await fetch('/api/members/auto-add', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: honName.trim(), council: 'development' }),
+        });
+        fetch('/api/members')
+          .then(r => r.ok && r.json())
+          .then(d => { if (d?.members?.length) setMembers(d.members); })
+          .catch(() => {});
+      } catch {}
+    }
+
     const amount = honAmount === "custom" ? Number(honCustom) || 0 : honAmount || 0;
     processDonation({ amount, donorName: honName, phone: honPhone, message: honMessage, honoredMemberId: honoredMember });
   }
@@ -326,46 +363,21 @@ export default function DonationForm() {
                 </div>
 
                 <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-                  <div className="mb-4">
+                  <div>
                     <label className="mb-1.5 flex items-center gap-1.5 text-sm font-bold text-nobuk">
                       <Church size={14} className="text-amber" /> Donor (church member)
                     </label>
                     <div ref={genDropdownRef} className="relative">
-                      <button type="button" onClick={() => setGenMemberOpen(!genMemberOpen)}
-                        className="flex w-full cursor-pointer items-center gap-3 rounded-xl border-2 border-gray-200 bg-white px-4 py-3 text-left outline-none transition-all hover:border-nobuk focus:border-nobuk">
-                        {genSelected ? (
-                          <>
-                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-nobuk text-sm font-bold text-white shadow-sm">
-                              {initials(genSelected.name)}
-                            </div>
-                            <div className="min-w-0 flex-1">
-                              <p className="text-base font-bold text-nobuk">{genSelected.name}</p>
-                              <p className="text-xs font-medium text-muted">
-                                {councilMeta[genSelected.council]?.label || genSelected.council}
-                              </p>
-                            </div>
-                          </>
-                        ) : (
-                          <>
-                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 border-dashed border-gray-300 bg-gray-50 text-amber">
-                              <Church size={16} />
-                            </div>
-                            <span className="text-base font-medium text-muted">Select a church member</span>
-                          </>
-                        )}
-                        <ChevronDown size={20} className={`ml-auto shrink-0 text-muted transition ${genMemberOpen ? "rotate-180" : ""}`} />
-                      </button>
+                      <div className="relative">
+                        <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
+                        <input type="text" placeholder="Type your name or select from list..." value={genMemberSearch}
+                          onChange={(e) => { setGenMemberSearch(e.target.value); setGenSelectedMember(""); setGenMemberOpen(true); }}
+                          onFocus={() => setGenMemberOpen(true)}
+                          className="w-full rounded-xl border-2 border-gray-200 bg-white py-3 pl-9 pr-3 text-sm text-nobuk outline-none transition focus:border-nobuk placeholder:text-muted/60" />
+                      </div>
 
-                      {genMemberOpen && (
-                        <div className="absolute z-20 mt-2 w-full overflow-hidden rounded-xl border-2 border-gray-200 bg-white shadow-xl animate-scale-in">
-                          <div className="border-b border-gray-100 bg-gray-50 p-3">
-                            <div className="relative">
-                              <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
-                              <input type="text" placeholder="Search members..." value={genMemberSearch}
-                                onChange={(e) => setGenMemberSearch(e.target.value)}
-                                className="w-full rounded-lg border border-gray-200 bg-white py-2.5 pl-9 pr-3 text-sm font-medium text-nobuk outline-none focus:border-nobuk focus:ring-2 focus:ring-nobuk/20" />
-                            </div>
-                          </div>
+                      {genMemberOpen && genFilteredMembers.length > 0 && (
+                        <div className="absolute z-20 mt-1 w-full overflow-hidden rounded-xl border-2 border-gray-200 bg-white shadow-xl animate-scale-in">
                           <div className="max-h-64 overflow-y-auto divide-y divide-gray-100">
                             {councilOrder.map(council => {
                               const councilMembers = genGroupedMembers[council];
@@ -381,7 +393,7 @@ export default function DonationForm() {
                                   </div>
                                   {councilMembers.map((m) => (
                                     <button key={m.id} type="button"
-                                      onClick={() => { setGenSelectedMember(m.id); setGenMemberOpen(false); setGenMemberSearch(""); }}
+                                      onClick={() => { setGenSelectedMember(m.id); setGenMemberSearch(m.name); setGenMemberOpen(false); }}
                                       className={`flex w-full cursor-pointer items-center gap-3 px-4 py-3 text-left transition-all ${
                                         genSelectedMember === m.id
                                           ? "bg-nobuk-muted font-bold shadow-inner"
@@ -403,12 +415,6 @@ export default function DonationForm() {
                                 </div>
                               );
                             })}
-                            {genFilteredMembers.length === 0 && (
-                              <div className="px-4 py-8 text-center">
-                                <Search size={24} className="mx-auto mb-2 text-gray-300" />
-                                <p className="text-sm font-medium text-muted">No members found</p>
-                              </div>
-                            )}
                           </div>
                         </div>
                       )}
@@ -570,67 +576,56 @@ export default function DonationForm() {
                 </div>
 
                 <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-                  <div className="mb-4" ref={honNameDropdownRef}>
+                  <div ref={honNameDropdownRef} className="relative mb-4">
                     <label className="mb-1.5 flex items-center gap-1.5 text-sm font-bold text-nobuk">
                       <User size={14} className="text-amber" /> Your name <span className="text-red-500">*</span>
                     </label>
                     <div className="relative">
-                      <button type="button" onClick={() => setHonNameOpen(!honNameOpen)}
-                        className="flex w-full cursor-pointer items-center gap-3 rounded-xl border-2 border-gray-200 bg-white px-4 py-3 text-left outline-none transition-all hover:border-nobuk focus:border-nobuk">
-                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-nobuk text-sm font-bold text-white shadow-sm">
-                          {initials(honName || "?")}
-                        </div>
-                        <span className="text-base font-bold text-nobuk">{honName || <span className="font-medium text-muted">Select a church member</span>}</span>
-                        <ChevronDown size={20} className={`ml-auto shrink-0 text-muted transition ${honNameOpen ? "rotate-180" : ""}`} />
-                      </button>
-
-                      {honNameOpen && (
-                        <div className="absolute z-20 mt-2 w-full overflow-hidden rounded-xl border-2 border-gray-200 bg-white shadow-xl animate-scale-in">
-                          <div className="border-b border-gray-100 bg-gray-50 p-3">
-                            <div className="relative">
-                              <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
-                              <input type="text" placeholder="Search members..." value={honNameSearch}
-                                onChange={(e) => setHonNameSearch(e.target.value)}
-                                className="w-full rounded-lg border border-gray-200 bg-white py-2.5 pl-9 pr-3 text-sm font-medium text-nobuk outline-none focus:border-nobuk focus:ring-2 focus:ring-nobuk/20" />
-                            </div>
-                          </div>
-                          <div className="max-h-64 overflow-y-auto divide-y divide-gray-100">
-                            {councilOrder.map(council => {
-                              const councilMembers = honNameGrouped[council];
-                              if (!councilMembers?.length) return null;
-                              const meta = councilMeta[council] || { label: council, icon: Medal };
-                              const Icon = meta.icon;
-                              return (
-                                <div key={council}>
-                                  <div className="sticky top-0 flex items-center gap-2 bg-gray-50 px-4 py-2">
-                                    <Icon size={14} className="text-muted" />
-                                    <span className="text-xs font-bold text-muted uppercase tracking-wider">{meta.label}</span>
-                                    <span className="ml-auto text-[10px] text-muted">{councilMembers.length}</span>
-                                  </div>
-                                  {councilMembers.map((m) => (
-                                    <button key={m.id} type="button"
-                                      onClick={() => { setHonName(m.name); setHonNameSearch(""); setHonNameOpen(false); }}
-                                      className={`flex w-full items-center gap-3 px-4 py-3 text-left transition-all hover:bg-gray-50 ${
-                                        honName === m.name ? "bg-gray-50 font-bold" : ""
-                                      }`}>
-                                      <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
-                                        honName === m.name ? "bg-nobuk text-white" : "bg-gray-200 text-muted"
-                                      }`}>
-                                        {m.name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2)}
-                                      </div>
-                                      <div className="min-w-0 flex-1">
-                                        <p className={`text-sm ${honName === m.name ? "text-nobuk" : "text-nobuk font-medium"}`}>{m.name}</p>
-                                      </div>
-                                      {honName === m.name && <Check size={16} className="text-nobuk" />}
-                                    </button>
-                                  ))}
-                                </div>
-                              );
-                            })}
-                          </div>
-                        </div>
-                      )}
+                      <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
+                      <input type="text" value={honName} onChange={e => { setHonName(e.target.value); setHonNameOpen(true); }}
+                        onFocus={() => setHonNameOpen(true)}
+                        placeholder="Type your name or select from list..."
+                        className="w-full rounded-xl border-2 border-gray-200 bg-white py-3 pl-9 pr-3 text-sm text-nobuk outline-none transition focus:border-nobuk placeholder:text-muted/60" />
                     </div>
+
+                    {honNameOpen && honNameGrouped && (
+                      <div className="absolute top-full left-0 right-0 z-20 mt-1 overflow-hidden rounded-xl border-2 border-gray-200 bg-white shadow-xl animate-scale-in">
+                        <div className="max-h-64 overflow-y-auto divide-y divide-gray-100">
+                          {councilOrder.map(council => {
+                            const councilMembers = honNameGrouped[council];
+                            if (!councilMembers?.length) return null;
+                            const meta = councilMeta[council] || { label: council, icon: Medal };
+                            const Icon = meta.icon;
+                            return (
+                              <div key={council}>
+                                <div className="sticky top-0 flex items-center gap-2 bg-gray-50 px-4 py-2">
+                                  <Icon size={14} className="text-muted" />
+                                  <span className="text-xs font-bold text-muted uppercase tracking-wider">{meta.label}</span>
+                                  <span className="ml-auto text-[10px] text-muted">{councilMembers.length}</span>
+                                </div>
+                                {councilMembers.map((m) => (
+                                  <button key={m.id} type="button"
+                                    onClick={() => { setHonName(m.name); setHonNameOpen(false); }}
+                                    className={`flex w-full items-center gap-3 px-4 py-3 text-left transition-all hover:bg-gray-50 ${
+                                      honName === m.name ? "bg-gray-50 font-bold" : ""
+                                    }`}>
+                                    <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
+                                      honName === m.name ? "bg-nobuk text-white" : "bg-gray-200 text-muted"
+                                    }`}>
+                                      {m.name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2)}
+                                    </div>
+                                    <div className="min-w-0 flex-1">
+                                      <p className={`text-sm ${honName === m.name ? "text-nobuk" : "text-nobuk font-medium"}`}>{m.name}</p>
+                                    </div>
+                                    {honName === m.name && <Check size={16} className="text-nobuk" />}
+                                  </button>
+                                ))}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
                   </div>
                   <div>
                     <label className="mb-1.5 flex items-center gap-1.5 text-sm font-bold text-nobuk">

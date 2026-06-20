@@ -1,7 +1,13 @@
 import { Router } from "express";
 import { requireService } from "../lib/supabase.js";
-import { requireAdmin, requireAdminOrAbove, logAudit } from "../lib/admin.js";
+import { requireAdmin, requireAdminOrAbove, logAudit, rateLimit } from "../lib/admin.js";
 import type { AuditAction } from "../lib/admin.js";
+
+function sanitizeName(name: string): string {
+  return name.replace(/<[^>]*>/g, "").trim().slice(0, 100);
+}
+
+const validCouncils = ["parish_board", "women_council", "men_council", "development"];
 
 export const membersRouter = Router();
 
@@ -16,9 +22,44 @@ membersRouter.get("/", async (_req, res) => {
       .order("name");
 
     if (error) return res.status(500).json({ error: error.message });
-    res.json({ member: data });
+    res.json({ members: data });
   } catch (err) {
-    console.error("member create error:", err);
+    console.error("members list error:", err);
+    res.status(500).json({ error: "Something went wrong. Please try again." });
+  }
+});
+
+// Public endpoint: auto-add a name when typing in a form (no auth required, rate-limited)
+membersRouter.post("/auto-add", rateLimit, async (req, res) => {
+  try {
+    const db = requireService();
+    let { name, council } = req.body;
+    name = sanitizeName(name || "");
+    council = (council || "development").toLowerCase();
+
+    if (!name || name.length < 2) return res.status(400).json({ error: "Name must be at least 2 characters" });
+    if (!validCouncils.includes(council)) council = "development";
+
+    const { data: existing } = await db
+      .from("church_members")
+      .select("id, name, council")
+      .eq("is_active", true)
+      .ilike("name", name);
+
+    if (existing?.length) {
+      return res.json({ member: existing[0], existed: true });
+    }
+
+    const { data, error } = await db
+      .from("church_members")
+      .insert({ name, council })
+      .select()
+      .single();
+
+    if (error) return res.status(500).json({ error: error.message });
+    res.status(201).json({ member: data, existed: false });
+  } catch (err) {
+    console.error("auto-add error:", err);
     res.status(500).json({ error: "Something went wrong. Please try again." });
   }
 });

@@ -91,7 +91,7 @@ export default function ContributeSection() {
       if (!exists && inputValue.trim().length >= 2) {
         setAutoAdding(true);
         try {
-          await fetch('/api/members', {
+          await fetch('/api/members/auto-add', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ name: inputValue.trim(), council: 'development' }),
