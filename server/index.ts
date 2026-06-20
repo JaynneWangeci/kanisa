@@ -1,6 +1,8 @@
+import crypto from "crypto";
 import dotenv from "dotenv";
 import express from "express";
 import cors from "cors";
+import { getRedis, cacheGet, cacheSet, cacheKey } from "./lib/redis.js";
 import { authRouter } from "./routes/auth.js";
 import { campaignsRouter } from "./routes/campaigns.js";
 import { committeeRouter } from "./routes/committee.js";
@@ -15,6 +17,7 @@ import { pledgesRouter } from "./routes/pledges.js";
 import { remindersRouter } from "./routes/reminders.js";
 import { analyticsRouter } from "./routes/analytics.js";
 import { rateLimit } from "./lib/admin.js";
+import { startAllWorkers, stopAllWorkers } from "./lib/queue.js";
 
 if (!process.env.VERCEL) {
   dotenv.config({ path: ".env.local" });
@@ -25,6 +28,20 @@ const PORT = process.env.PORT || 3001;
 
 app.use(cors({ origin: process.env.CORS_ORIGIN || "http://localhost:5173", credentials: true }));
 app.use(express.json());
+
+// ── Redis connection + caching middleware ──
+try {
+  const redis = getRedis();
+  if (process.env.REDIS_URL || process.env.KV_URL) {
+    redis.connect().catch(() => {});
+  }
+} catch { /* Redis not available */ }
+
+// Request ID middleware
+app.use((req, _res, next) => {
+  (req as any).requestId = (req.headers["x-request-id"] as string) || crypto.randomUUID();
+  next();
+});
 
 app.use("/api/auth", authRouter);
 app.use("/api/campaigns", campaignsRouter);
@@ -58,7 +75,19 @@ app.get("/api/debug", (_req, res) => {
 });
 
 if (process.env.VERCEL !== "1") {
-  app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
+  // Start background workers
+  startAllWorkers();
+
+  const server = app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
+
+  // Graceful shutdown
+  const shutdown = async () => {
+    console.log("Shutting down gracefully...");
+    await stopAllWorkers();
+    server.close(() => process.exit(0));
+  };
+  process.on("SIGTERM", shutdown);
+  process.on("SIGINT", shutdown);
 }
 
 export default app;

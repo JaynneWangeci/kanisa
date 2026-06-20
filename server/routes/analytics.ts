@@ -1,12 +1,18 @@
 import { Router } from "express";
 import { requireService } from "../lib/supabase.js";
 import { requireAdmin, logAudit } from "../lib/admin.js";
+import { cacheGet, cacheSet, cacheKey } from "../lib/redis.js";
 
 export const analyticsRouter = Router();
 
 analyticsRouter.get("/dashboard", requireAdmin, async (req, res) => {
   try {
     const db = requireService();
+
+    // Try cache first
+    const cacheKeyStr = cacheKey("analytics", "dashboard");
+    const cached = await cacheGet<any>(cacheKeyStr);
+    if (cached) return res.json(cached);
     const now = new Date();
     const periods = {
       "7d": new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000),
@@ -214,7 +220,7 @@ analyticsRouter.get("/dashboard", requireAdmin, async (req, res) => {
       ipAddress: (req as any).adminIp,
     });
 
-    res.json({
+    const result = {
       kpis: {
         current30d_total: cur30Total,
         current30d_count: cur30Count,
@@ -247,7 +253,12 @@ analyticsRouter.get("/dashboard", requireAdmin, async (req, res) => {
         active: pledgeActive,
         fulfillment_rate: Math.round(pledgeFulfillmentRate * 10) / 10,
       },
-    });
+    };
+
+    // Cache for 60 seconds
+    await cacheSet(cacheKeyStr, result, 60);
+
+    res.json(result);
   } catch (err) {
     console.error("analytics dashboard error:", err);
     res.status(500).json({ error: "Server error" });

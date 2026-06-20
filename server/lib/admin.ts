@@ -3,6 +3,10 @@ import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import type { Request, Response, NextFunction } from "express";
 import { requireService } from "./supabase.js";
+import { logAudit as logAuditV2 } from "./audit.js";
+import { hasPermission, DataType, Action } from "./permissions.js";
+import { cacheGet, cacheSet, cacheKey } from "./redis.js";
+import { v4 as uuid } from "uuid";
 
 const JWT_SECRET = process.env.JWT_SECRET || "change-me-in-production";
 const JWT_EXPIRES = "24h";
@@ -12,18 +16,10 @@ const RATE_LIMIT_WINDOW = 60 * 1000;
 const RATE_LIMIT_MAX = 300;
 const reqCounts = new Map<string, { count: number; resetAt: number }>();
 
-export type AuditAction =
-  | "login" | "logout" | "failed_login"
-  | "password_change" | "password_reset" | "password_reset_request"
-  | "rate_limit_blocked"
-  | "view_donations" | "view_donation" | "update_donation"
-  | "export_ledger"
-  | "view_stats"
-  | "view_members"
-  | "create_committee" | "update_committee" | "delete_committee"
-  | "view_church_members" | "create_church_member" | "update_church_member" | "delete_church_member"
-  | "view_audit_logs"
-  | "create_admin" | "update_admin" | "delete_admin" | "update_self_password";
+export { hasPermission } from "./permissions.js";
+export { requirePermission } from "./permissions.js";
+export { DataType, Action } from "./permissions.js";
+export type { AuditAction, AuditResourceType } from "./audit.js";
 
 export function hashPassword(password: string) {
   return bcrypt.hashSync(password, 10);
@@ -62,24 +58,24 @@ export async function setAdminContext(adminId: string, role: string) {
   }
 }
 
-// ----- Simple In-Memory Cache ----- //
+// ----- Legacy In-Memory Cache (deprecated, kept for backward compat) ----- //
 
 interface CacheEntry { data: any; expiresAt: number; }
-const cache = new Map<string, CacheEntry>();
-const CACHE_TTL = 30 * 1000;
+const memCache = new Map<string, CacheEntry>();
+const MEM_CACHE_TTL = 30 * 1000;
 
 export function getCached(key: string): any | null {
-  const entry = cache.get(key);
+  const entry = memCache.get(key);
   if (entry && Date.now() < entry.expiresAt) return entry.data;
-  cache.delete(key);
+  memCache.delete(key);
   return null;
 }
 
-export function setCache(key: string, data: any, ttl = CACHE_TTL) {
-  cache.set(key, { data, expiresAt: Date.now() + ttl });
-  if (cache.size > 100) {
-    const first = cache.keys().next().value;
-    if (first) cache.delete(first);
+export function setCache(key: string, data: any, ttl = MEM_CACHE_TTL) {
+  memCache.set(key, { data, expiresAt: Date.now() + ttl });
+  if (memCache.size > 100) {
+    const first = memCache.keys().next().value;
+    if (first) memCache.delete(first);
   }
 }
 
@@ -193,11 +189,11 @@ export async function resetFailedAttempts(email: string) {
     .eq("email", email.toLowerCase().trim());
 }
 
-// ----- Audit Logging ----- //
+// ----- Enhanced Audit Logging (v2) ----- //
 
 export async function logAudit(params: {
   adminId: string;
-  action: AuditAction;
+  action: string;
   resourceType?: string | null;
   resourceId?: string | null;
   details?: Record<string, unknown> | null;
@@ -208,21 +204,28 @@ export async function logAudit(params: {
     const db = requireService();
     const { data: admin } = await db
       .from("admin_users")
-      .select("name")
+      .select("name, role")
       .eq("id", params.adminId)
       .single();
 
-    const { error } = await db.from("audit_logs").insert({
-      admin_id: params.adminId,
-      admin_name: admin?.name || null,
+    const entry = {
+      id: uuid(),
+      timestamp: new Date().toISOString(),
+      actor_id: params.adminId,
+      actor_name: admin?.name || null,
+      actor_role: admin?.role || null,
       action: params.action,
       resource_type: params.resourceType || null,
       resource_id: params.resourceId || null,
       details: params.details || null,
       ip_address: params.ipAddress || null,
       user_agent: params.userAgent || null,
-    });
-    if (error) console.error("audit log error:", error.message);
+      request_id: null,
+      immutable: true,
+    };
+
+    // Write to audit table
+    await db.from("audit_logs").insert(entry);
   } catch (e) {
     console.error("audit log exception:", e);
   }
@@ -242,6 +245,7 @@ export function requireAdmin(req: Request, res: Response, next: NextFunction) {
     (req as any).adminIp = getClientIp(req);
     (req as any).ipAddress = getClientIp(req);
     (req as any).userAgent = getUserAgent(req);
+    (req as any).requestId = (req.headers["x-request-id"] as string) || uuid();
     next();
   } catch {
     return res.status(401).json({ error: "Invalid or expired token" });
