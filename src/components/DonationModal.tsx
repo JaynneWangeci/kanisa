@@ -269,7 +269,7 @@ export default function DonationModal({ member, onClose, donorName: initialDonor
                 </label>
                 <div className="relative">
                   <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#5B6F88]" />
-                  <input type="text" value={name} onChange={e => { setName(e.target.value); setShowNameDropdown(true); }}
+                  <input type="text" value={name} onChange={e => { setName(e.target.value); setNameSearch(e.target.value); setShowNameDropdown(true); }}
                     onFocus={() => setShowNameDropdown(true)}
                     placeholder="Type your name or select from list..."
                     className="w-full rounded-xl border border-[#2C4056]/20 bg-white py-3 pl-9 pr-3 text-sm text-[#1B2838] outline-none transition focus:border-[#1E6F9F] placeholder:text-[#5B6F88]/40" />
