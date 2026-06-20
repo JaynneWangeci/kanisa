@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
-import { Medal, Search, Heart, ExternalLink } from 'lucide-react';
+import { Medal, Search, Heart, ExternalLink, HandHeart } from 'lucide-react';
 import { useLang } from '../context/LanguageContext';
 import PersonalPortfolio from './PersonalPortfolio';
+import PledgeForm from './PledgeForm';
 
 interface Pledge {
   id: string;
@@ -31,6 +32,7 @@ export default function PledgeBoard() {
   const [search, setSearch] = useState('');
   const [result, setResult] = useState<{ pledges: Pledge[]; donated: any[]; honoured: any[] } | null>(null);
   const [portfolioName, setPortfolioName] = useState<string | null>(null);
+  const [showPledgeForm, setShowPledgeForm] = useState(false);
 
   useEffect(() => {
     fetch('/api/pledges')
@@ -120,6 +122,15 @@ export default function PledgeBoard() {
               </div>
             )}
           </div>
+
+          {/* Make a Pledge button */}
+          <div className="mt-6">
+            <button type="button" onClick={() => setShowPledgeForm(true)}
+              className="btn-lift inline-flex items-center gap-2 rounded-full bg-blue-600 px-6 py-3 text-sm font-bold text-white shadow-sm hover:bg-blue-700 transition-all">
+              <HandHeart size={18} />
+              {t('Make a Pledge', 'Weka Ahadi')}
+            </button>
+          </div>
         </div>
 
         {/* Public pledge board */}
@@ -165,6 +176,14 @@ export default function PledgeBoard() {
 
       {portfolioName && (
         <PersonalPortfolio name={portfolioName} onClose={() => setPortfolioName(null)} />
+      )}
+
+      {showPledgeForm && (
+        <PledgeForm
+          donorName=""
+          onClose={() => setShowPledgeForm(false)}
+          onCreated={() => { fetch('/api/pledges').then(r => r.ok && r.json()).then(d => { if (d?.pledges) setPledges(d.pledges); }).catch(() => {}); }}
+        />
       )}
     </section>
   );

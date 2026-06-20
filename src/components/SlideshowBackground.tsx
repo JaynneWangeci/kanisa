@@ -39,10 +39,10 @@ export default function SlideshowBackground() {
           <div className="absolute inset-0 animate-ken-burns" style={{ backgroundImage: `url(${src})`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
         </div>
       ))}
-      <div className="fixed inset-0 bg-gradient-to-b from-[#1f2a1d]/75 via-[#1f2a1d]/50 to-[#1f2a1d]/85" />
-      <div className="fixed inset-0 bg-gradient-to-r from-[#1f2a1d]/30 to-transparent" />
-      <div className="fixed top-20 right-10 h-72 w-72 rounded-full bg-[#85AB8B]/8 blur-3xl" />
-      <div className="fixed bottom-20 left-10 h-96 w-96 rounded-full bg-[#85AB8B]/5 blur-3xl" />
+      <div className="fixed inset-0 bg-gradient-to-b from-[#1B2838]/75 via-[#1B2838]/50 to-[#1B2838]/85" />
+      <div className="fixed inset-0 bg-gradient-to-r from-[#1B2838]/30 to-transparent" />
+      <div className="fixed top-20 right-10 h-72 w-72 rounded-full bg-[#5B9BD5]/8 blur-3xl" />
+      <div className="fixed bottom-20 left-10 h-96 w-96 rounded-full bg-[#5B9BD5]/5 blur-3xl" />
     </>
   );
 }

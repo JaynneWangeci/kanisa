@@ -7,18 +7,18 @@
   --color-amber: #C4964A;
   --color-amber-light: #F5EDD6;
   --color-amber-dark: #9E7A3A;
-  --color-cream: #FDF7F0;
-  --color-cream-dark: #F5EDE1;
-  --color-ink: #2D2D2D;
-  --color-muted: #8B7D6B;
+  --color-cream: #F0F7FF;
+  --color-cream-dark: #E0EEF8;
+  --color-ink: #1E293B;
+  --color-muted: #64748B;
 
-  --color-linkflow-dark: #1f2a1d;
-  --color-linkflow-mdark: #2d3a2a;
-  --color-linkflow-hover: #2a3827;
-  --color-linkflow-body: #4b5b47;
-  --color-linkflow-heading: #336443;
-  --color-linkflow-accent: #85AB8B;
-  --color-linkflow-bottom: #3d5638;
+  --color-linkflow-dark: #1B2838;
+  --color-linkflow-mdark: #2C4056;
+  --color-linkflow-hover: #3B5A7A;
+  --color-linkflow-body: #5B6F88;
+  --color-linkflow-heading: #1E6F9F;
+  --color-linkflow-accent: #5B9BD5;
+  --color-linkflow-bottom: #3A5A7A;
 }
 
 @theme inline {
@@ -52,7 +52,7 @@ html, body, #root {
 }
 
 *:focus-visible {
-  outline: 2px solid var(--color-amber);
+  outline: 2px solid var(--color-linkflow-accent);
   outline-offset: 2px;
   border-radius: 4px;
 }
@@ -133,8 +133,8 @@ html {
 }
 
 @keyframes glow-pulse {
-  0%, 100% { box-shadow: 0 0 20px rgba(212,168,83,0.1); }
-  50% { box-shadow: 0 0 40px rgba(212,168,83,0.25); }
+  0%, 100% { box-shadow: 0 0 20px rgba(91,155,213,0.15); }
+  50% { box-shadow: 0 0 40px rgba(91,155,213,0.3); }
 }
 
 @keyframes reveal {

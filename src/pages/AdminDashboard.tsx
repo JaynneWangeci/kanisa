@@ -1005,7 +1005,7 @@ export default function AdminDashboard() {
                             <span className="text-[9px] font-bold text-nobuk tabular-nums">{(d.total / 1000).toFixed(0)}k</span>
                             <div
                               className="mt-1 w-full rounded-t"
-                              style={{ height: h, background: "linear-gradient(180deg, #C4964A, #336443)", minHeight: 2 }}
+                              style={{ height: h, background: "linear-gradient(180deg, #C4964A, #1E6F9F)", minHeight: 2 }}
                               title={`${d.date}: KES ${d.total.toLocaleString("en-KE")}`}
                             />
                             <span className="mt-1 text-[8px] text-muted">{d.date.slice(5)}</span>

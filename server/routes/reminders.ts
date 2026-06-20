@@ -18,18 +18,18 @@ remindersRouter.post("/send", async (_req, res) => {
 
     const bibleRes = await db.from("bible_verses").select("*");
     const verses = bibleRes.data || [];
+    const enVerses = verses.filter(v => v.language === "en");
+    const swVerses = verses.filter(v => v.language === "sw");
 
     let sent = 0;
     for (const pledge of due || []) {
       if (!pledge.whatsapp_number) continue;
 
-      const verse = verses[Math.floor(Math.random() * verses.length)];
+      const enVerse = enVerses[Math.floor(Math.random() * enVerses.length)];
+      const swVerse = swVerses[Math.floor(Math.random() * swVerses.length)];
       const pct = pledge.amount > 0 ? Math.round((pledge.paid / pledge.amount) * 100) : 0;
-      const lang = verse?.language === "sw" ? "sw" : "en";
 
-      const message = lang === "sw"
-        ? `Habari ${pledge.donor_name}! ⛪\n\nUkumbusho wa ahadi yako:\n• Umeahidi: KES ${pledge.amount.toLocaleString()}\n• Umalipa: KES ${pledge.paid.toLocaleString()} (${pct}%)\n• Inabaki: KES ${pledge.remaining.toLocaleString()}\n\nNeno la kutia moyo:\n"${verse?.verse}" — ${verse?.reference}\n\nMungu akubariki! AIPCA Bahati Cathedral`
-        : `Hi ${pledge.donor_name}! ⛪\n\nYour pledge reminder:\n• Pledged: KES ${pledge.amount.toLocaleString()}\n• Paid: KES ${pledge.paid.toLocaleString()} (${pct}%)\n• Remaining: KES ${pledge.remaining.toLocaleString()}\n\nEncouragement:\n"${verse?.verse}" — ${verse?.reference}\n\nGod bless you! AIPCA Bahati Cathedral`;
+      const message = `Hi ${pledge.donor_name}! ⛪\n\nYour pledge reminder:\n• Pledged: KES ${pledge.amount.toLocaleString()}\n• Paid: KES ${pledge.paid.toLocaleString()} (${pct}%)\n• Remaining: KES ${pledge.remaining.toLocaleString()}\n\nEncouragement:\n"${enVerse?.verse}" — ${enVerse?.reference}\n\nHabari ${pledge.donor_name}! ⛪\n\nUkumbusho wa ahadi yako:\n• Umeahidi: KES ${pledge.amount.toLocaleString()}\n• Umalipa: KES ${pledge.paid.toLocaleString()} (${pct}%)\n• Inabaki: KES ${pledge.remaining.toLocaleString()}\n\nNeno la kutia moyo:\n"${swVerse?.verse}" — ${swVerse?.reference}\n\nMungu akubariki! AIPCA Bahati Cathedral`;
 
       const ok = await sendWhatsApp(pledge.whatsapp_number, message);
       if (ok) sent++;

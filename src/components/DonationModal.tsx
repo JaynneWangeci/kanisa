@@ -186,19 +186,19 @@ export default function DonationModal({ member, onClose, donorName: initialDonor
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
-      <div className="absolute inset-0 bg-[#1f2a1d]/60 backdrop-blur-sm" onClick={onClose} />
+      <div className="absolute inset-0 bg-[#1B2838]/60 backdrop-blur-sm" onClick={onClose} />
       <div className="relative z-10 w-full max-w-lg rounded-t-2xl sm:rounded-2xl bg-white shadow-2xl max-h-[90vh] overflow-y-auto">
-        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-[#2d3a2a]/10 bg-white px-6 py-4">
+        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-[#2C4056]/10 bg-white px-6 py-4">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#85AB8B]/20 text-sm font-bold text-[#336443]">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#5B9BD5]/20 text-sm font-bold text-[#1E6F9F]">
               {isGeneral ? <Heart size={16} /> : member.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
             </div>
             <div>
-              <p className="text-sm font-bold text-[#1f2a1d]">{isGeneral ? 'General Harambee Fund' : member.name}</p>
+              <p className="text-sm font-bold text-[#1B2838]">{isGeneral ? 'General Harambee Fund' : member.name}</p>
             </div>
           </div>
-          <button onClick={onClose} className="flex h-8 w-8 items-center justify-center rounded-full hover:bg-[#2d3a2a]/10 transition-colors">
-            <X size={16} className="text-[#4b5b47]" />
+          <button onClick={onClose} className="flex h-8 w-8 items-center justify-center rounded-full hover:bg-[#2C4056]/10 transition-colors">
+            <X size={16} className="text-[#5B6F88]" />
           </button>
         </div>
 
@@ -212,7 +212,7 @@ export default function DonationModal({ member, onClose, donorName: initialDonor
               )}
 
               <div>
-                <label className="mb-2 block text-sm font-bold text-[#1f2a1d]">Amount (KES)</label>
+                <label className="mb-2 block text-sm font-bold text-[#1B2838]">Amount (KES)</label>
                 <div className="grid grid-cols-5 gap-2">
                   {presets.map(p => (
                     <button
@@ -220,7 +220,7 @@ export default function DonationModal({ member, onClose, donorName: initialDonor
                       type="button"
                       onClick={() => { setAmount(p as any); setCustomAmount(''); }}
                       className={`rounded-lg py-2.5 text-sm font-bold transition ${
-                        amount === p ? 'bg-[#1f2a1d] text-white shadow-sm' : 'border border-[#2d3a2a]/20 text-[#4b5b47] hover:border-[#336443] hover:text-[#336443]'
+                        amount === p ? 'bg-[#1B2838] text-white shadow-sm' : 'border border-[#2C4056]/20 text-[#5B6F88] hover:border-[#1E6F9F] hover:text-[#1E6F9F]'
                       }`}
                     >
                       {p.toLocaleString()}
@@ -232,38 +232,38 @@ export default function DonationModal({ member, onClose, donorName: initialDonor
                   placeholder="Custom amount"
                   value={customAmount}
                   onChange={e => { setCustomAmount(e.target.value); if (e.target.value) setAmount('custom'); }}
-                  className="mt-2 w-full rounded-xl border border-[#2d3a2a]/20 bg-white px-4 py-3 text-sm text-[#1f2a1d] outline-none transition focus:border-[#336443] placeholder:text-[#4b5b47]/40"
+                  className="mt-2 w-full rounded-xl border border-[#2C4056]/20 bg-white px-4 py-3 text-sm text-[#1B2838] outline-none transition focus:border-[#1E6F9F] placeholder:text-[#5B6F88]/40"
                 />
               </div>
 
               <div ref={dropdownRef} className="relative">
-                <label className="mb-1.5 flex items-center gap-1.5 text-sm font-bold text-[#1f2a1d]">
-                  <User size={14} className="text-[#85AB8B]" /> Your name <span className="text-red-500">*</span>
+                <label className="mb-1.5 flex items-center gap-1.5 text-sm font-bold text-[#1B2838]">
+                  <User size={14} className="text-[#5B9BD5]" /> Your name <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
-                  <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#4b5b47]" />
+                  <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#5B6F88]" />
                   <input type="text" value={name} onChange={e => { setName(e.target.value); setShowNameDropdown(true); }}
                     onFocus={() => setShowNameDropdown(true)}
                     placeholder="Type your name or select from list..."
-                    className="w-full rounded-xl border border-[#2d3a2a]/20 bg-white py-3 pl-9 pr-3 text-sm text-[#1f2a1d] outline-none transition focus:border-[#336443] placeholder:text-[#4b5b47]/40" />
+                    className="w-full rounded-xl border border-[#2C4056]/20 bg-white py-3 pl-9 pr-3 text-sm text-[#1B2838] outline-none transition focus:border-[#1E6F9F] placeholder:text-[#5B6F88]/40" />
                 </div>
 
                 {showNameDropdown && nameFiltered.length > 0 && (
-                  <div className="absolute top-full left-0 right-0 z-30 mt-1 overflow-hidden rounded-xl border border-[#2d3a2a]/10 bg-white shadow-lg">
-                    <div className="max-h-48 overflow-y-auto divide-y divide-[#2d3a2a]/5">
+                  <div className="absolute top-full left-0 right-0 z-30 mt-1 overflow-hidden rounded-xl border border-[#2C4056]/10 bg-white shadow-lg">
+                    <div className="max-h-48 overflow-y-auto divide-y divide-[#2C4056]/5">
                       {nameFiltered.map(m => (
                         <button key={m.id} type="button"
                           onClick={() => { setName(m.name); setShowNameDropdown(false); }}
-                          className={`flex w-full items-center gap-3 px-4 py-2.5 text-left transition-all hover:bg-[#85AB8B]/5 ${
-                            name === m.name ? 'bg-[#85AB8B]/10 font-bold' : ''
+                          className={`flex w-full items-center gap-3 px-4 py-2.5 text-left transition-all hover:bg-[#5B9BD5]/5 ${
+                            name === m.name ? 'bg-[#5B9BD5]/10 font-bold' : ''
                           }`}>
                           <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
-                            name === m.name ? 'bg-[#336443] text-white' : 'bg-[#85AB8B]/20 text-[#336443]'
+                            name === m.name ? 'bg-[#1E6F9F] text-white' : 'bg-[#5B9BD5]/20 text-[#1E6F9F]'
                           }`}>
                             {initials(m.name)}
                           </div>
-                          <p className={`text-sm ${name === m.name ? 'text-[#1f2a1d]' : 'text-[#1f2a1d] font-medium'}`}>{m.name}</p>
-                          {name === m.name && <Check size={14} className="ml-auto text-[#336443]" />}
+                          <p className={`text-sm ${name === m.name ? 'text-[#1B2838]' : 'text-[#1B2838] font-medium'}`}>{m.name}</p>
+                          {name === m.name && <Check size={14} className="ml-auto text-[#1E6F9F]" />}
                         </button>
                       ))}
                     </div>
@@ -272,29 +272,29 @@ export default function DonationModal({ member, onClose, donorName: initialDonor
               </div>
 
               <div>
-                <label className="mb-1.5 flex items-center gap-1.5 text-sm font-bold text-[#1f2a1d]">
-                  <Phone size={14} className="text-[#85AB8B]" /> M-Pesa number
+                <label className="mb-1.5 flex items-center gap-1.5 text-sm font-bold text-[#1B2838]">
+                  <Phone size={14} className="text-[#5B9BD5]" /> M-Pesa number
                 </label>
                 <input
                   type="tel"
                   placeholder="07XX XXX XXX"
                   value={phone}
                   onChange={e => setPhone(formatPhone(e.target.value))}
-                  className="w-full rounded-xl border border-[#2d3a2a]/20 bg-white px-4 py-3 text-sm text-[#1f2a1d] outline-none transition focus:border-[#336443] placeholder:text-[#4b5b47]/40"
+                  className="w-full rounded-xl border border-[#2C4056]/20 bg-white px-4 py-3 text-sm text-[#1B2838] outline-none transition focus:border-[#1E6F9F] placeholder:text-[#5B6F88]/40"
                 />
-                <p className="mt-1 text-xs text-[#4b5b47]">You will receive an M-Pesa prompt to enter your PIN</p>
+                <p className="mt-1 text-xs text-[#5B6F88]">You will receive an M-Pesa prompt to enter your PIN</p>
               </div>
 
               <div>
-                <label className="mb-1.5 flex items-center gap-1.5 text-sm font-bold text-[#1f2a1d]">
-                  <MessageSquare size={14} className="text-[#85AB8B]" /> Message <span className="font-normal text-[#4b5b47]">(optional)</span>
+                <label className="mb-1.5 flex items-center gap-1.5 text-sm font-bold text-[#1B2838]">
+                  <MessageSquare size={14} className="text-[#5B9BD5]" /> Message <span className="font-normal text-[#5B6F88]">(optional)</span>
                 </label>
                 <textarea
                   placeholder={isGeneral ? 'With thanksgiving for...' : `In honour of ${member.name}...`}
                   value={message}
                   onChange={e => setMessage(e.target.value)}
                   rows={2}
-                  className="w-full rounded-xl border border-[#2d3a2a]/20 bg-white px-4 py-3 text-sm text-[#1f2a1d] outline-none transition focus:border-[#336443] placeholder:text-[#4b5b47]/40 resize-none"
+                  className="w-full rounded-xl border border-[#2C4056]/20 bg-white px-4 py-3 text-sm text-[#1B2838] outline-none transition focus:border-[#1E6F9F] placeholder:text-[#5B6F88]/40 resize-none"
                 />
               </div>
 
@@ -302,19 +302,19 @@ export default function DonationModal({ member, onClose, donorName: initialDonor
                 type="button"
                 onClick={processDonation}
                 disabled={!name.trim() || (!amount && !customAmount)}
-                className="btn-lift w-full rounded-full bg-[#1f2a1d] py-3.5 text-base font-bold text-white shadow-sm hover:bg-[#2a3827] disabled:cursor-not-allowed disabled:opacity-40"
+                className="btn-lift w-full rounded-full bg-[#1B2838] py-3.5 text-base font-bold text-white shadow-sm hover:bg-[#3B5A7A] disabled:cursor-not-allowed disabled:opacity-40"
               >
                 {isGeneral
                   ? `Give KES ${(amount === 'custom' ? Number(customAmount) || 0 : amount || 0).toLocaleString()} via M-Pesa`
                   : `Honour ${member.name} with KES ${(amount === 'custom' ? Number(customAmount) || 0 : amount || 0).toLocaleString()}`}
               </button>
 
-              <div className="rounded-xl border border-[#2d3a2a]/10 bg-[#85AB8B]/5 p-4 text-center">
-                <p className="text-xs font-bold text-[#336443] uppercase tracking-wider">Or pay directly via M-Pesa Paybill</p>
-                <p className="mt-1 text-3xl font-bold tracking-tight text-[#1f2a1d]">835 872</p>
-                <div className="mx-auto mt-1 inline-flex items-center gap-1 rounded-full bg-[#85AB8B]/10 px-4 py-1.5">
-                  <span className="text-xs text-[#4b5b47]">Account:</span>
-                  <span className="text-xs font-bold text-[#1f2a1d]">Your Name</span>
+              <div className="rounded-xl border border-[#2C4056]/10 bg-[#5B9BD5]/5 p-4 text-center">
+                <p className="text-xs font-bold text-[#1E6F9F] uppercase tracking-wider">Or pay directly via M-Pesa Paybill</p>
+                <p className="mt-1 text-3xl font-bold tracking-tight text-[#1B2838]">835 872</p>
+                <div className="mx-auto mt-1 inline-flex items-center gap-1 rounded-full bg-[#5B9BD5]/10 px-4 py-1.5">
+                  <span className="text-xs text-[#5B6F88]">Account:</span>
+                  <span className="text-xs font-bold text-[#1B2838]">Your Name</span>
                 </div>
               </div>
             </div>
@@ -322,46 +322,46 @@ export default function DonationModal({ member, onClose, donorName: initialDonor
 
           {step === 'processing' && (
             <div className="py-8 text-center">
-              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[#85AB8B]/20">
-                <Loader2 size={32} className="animate-spin text-[#336443]" />
+              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[#5B9BD5]/20">
+                <Loader2 size={32} className="animate-spin text-[#1E6F9F]" />
               </div>
-              <h3 className="text-lg font-bold text-[#1f2a1d]">
+              <h3 className="text-lg font-bold text-[#1B2838]">
                 {isGeneral ? 'Processing your gift...' : `Honouring ${member.name}...`}
               </h3>
-              <p className="mt-2 text-sm text-[#4b5b47]">Check your phone for the M-Pesa PIN prompt</p>
-              <p className="mt-1 text-sm font-semibold text-[#336443]">KES {finalAmount.toLocaleString()}</p>
-              <div className="mt-4 h-1.5 w-full overflow-hidden rounded-full bg-[#2d3a2a]/10">
-                <div className="animate-progress-shine h-full w-full rounded-full bg-[#336443]/30" />
+              <p className="mt-2 text-sm text-[#5B6F88]">Check your phone for the M-Pesa PIN prompt</p>
+              <p className="mt-1 text-sm font-semibold text-[#1E6F9F]">KES {finalAmount.toLocaleString()}</p>
+              <div className="mt-4 h-1.5 w-full overflow-hidden rounded-full bg-[#2C4056]/10">
+                <div className="animate-progress-shine h-full w-full rounded-full bg-[#1E6F9F]/30" />
               </div>
             </div>
           )}
 
           {step === 'success' && (
             <div className="py-8 text-center">
-              <div className="mx-auto mb-4 flex h-16 w-16 animate-bounce-in items-center justify-center rounded-full bg-[#336443]">
+              <div className="mx-auto mb-4 flex h-16 w-16 animate-bounce-in items-center justify-center rounded-full bg-[#1E6F9F]">
                 <Check size={28} className="text-white" />
               </div>
-              <h3 className="text-xl font-bold text-[#1f2a1d]">
+              <h3 className="text-xl font-bold text-[#1B2838]">
                 Asante sana{finalDonorName ? `, ${finalDonorName}` : ''}!
               </h3>
-              <p className="mt-2 text-sm text-[#4b5b47]">
+              <p className="mt-2 text-sm text-[#5B6F88]">
                 {isGeneral
                   ? `Your gift of KES ${finalAmount.toLocaleString()} has been received.`
                   : `Your honour gift of KES ${finalAmount.toLocaleString()} for ${member.name} has been received.`}
               </p>
               {!isGeneral && (
-                <div className="mx-auto mt-4 inline-flex items-center gap-2 rounded-full bg-[#85AB8B]/10 px-4 py-1.5">
-                  <Heart size={12} className="text-[#336443]" />
-                  <span className="text-xs font-bold text-[#336443]">In honour of {member.name}</span>
+                <div className="mx-auto mt-4 inline-flex items-center gap-2 rounded-full bg-[#5B9BD5]/10 px-4 py-1.5">
+                  <Heart size={12} className="text-[#1E6F9F]" />
+                  <span className="text-xs font-bold text-[#1E6F9F]">In honour of {member.name}</span>
                 </div>
               )}
               {receiptNumber && (
-                <p className="mt-3 font-mono text-xs text-[#4b5b47]">Receipt: {receiptNumber}</p>
+                <p className="mt-3 font-mono text-xs text-[#5B6F88]">Receipt: {receiptNumber}</p>
               )}
               <div className="mt-6 flex flex-col gap-3 sm:flex-row">
                 <button
                   onClick={reset}
-                  className="btn-lift flex-1 rounded-full border border-[#2d3a2a]/20 px-5 py-2.5 text-sm font-bold text-[#4b5b47] hover:border-[#336443] hover:text-[#336443]"
+                  className="btn-lift flex-1 rounded-full border border-[#2C4056]/20 px-5 py-2.5 text-sm font-bold text-[#5B6F88] hover:border-[#1E6F9F] hover:text-[#1E6F9F]"
                 >
                   Give Again
                 </button>

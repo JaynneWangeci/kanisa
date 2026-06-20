@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Heart, Menu, X } from 'lucide-react';
+import { useLang } from '../context/LanguageContext';
 import DonationModal from './DonationModal';
 
 export default function ChurchHero() {
+  const { t } = useLang();
   const [menuOpen, setMenuOpen] = useState(false);
   const [showGive, setShowGive] = useState(false);
 
@@ -16,8 +18,8 @@ export default function ChurchHero() {
   }, [menuOpen]);
 
   const navLinks = [
-    { href: '#about', label: 'About' },
-    { href: '#contribute', label: 'Contribute' },
+    { href: '#about', label: t('About', 'Kuhusu') },
+    { href: '#contribute', label: t('Contribute', 'Changia') },
   ];
 
   return (
@@ -25,7 +27,7 @@ export default function ChurchHero() {
       {/* Navigation */}
       <nav className="relative z-30 flex items-center justify-between px-4 sm:px-6 md:px-10 py-4 sm:py-6">
         <div className="flex items-center gap-2 text-white/95">
-          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#85AB8B]/20 backdrop-blur-sm border border-white/20">
+          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#5B9BD5]/20 backdrop-blur-sm border border-white/20">
             <img src="/images/a.jpeg" alt="AIPCA" className="h-8 w-8 rounded-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
           </div>
           <span className="text-lg sm:text-xl md:text-2xl font-semibold tracking-tight" style={{ fontFamily: '"Neue Haas Grotesk Display Pro 55 Roman", "Neue Haas Grotesk Text Pro", "Helvetica Neue", Helvetica, Arial, sans-serif' }}>
@@ -47,10 +49,10 @@ export default function ChurchHero() {
           ))}
           <a
             href="#contribute"
-            className="ml-2 bg-white hover:bg-white/90 text-[#1f2a1d] text-sm font-semibold px-5 py-2.5 rounded-full transition-colors"
+            className="ml-2 bg-white hover:bg-white/90 text-[#1B2838] text-sm font-semibold px-5 py-2.5 rounded-full transition-colors"
             onClick={(e) => { e.preventDefault(); setShowGive(true); }}
           >
-            Give Now
+            {t('Give Now', 'Toa Sasa')}
           </a>
         </div>
 
@@ -74,12 +76,12 @@ export default function ChurchHero() {
         }`}
         onClick={() => setMenuOpen(false)}
       >
-        <div className="absolute inset-0 bg-[#1f2a1d]/60 backdrop-blur-sm" />
+        <div className="absolute inset-0 bg-[#1B2838]/60 backdrop-blur-sm" />
       </div>
 
       {/* Mobile menu drawer */}
       <div
-        className={`lg:hidden fixed top-0 right-0 bottom-0 z-20 w-[85%] max-w-sm bg-[#1f2a1d]/95 backdrop-blur-xl shadow-2xl transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+        className={`lg:hidden fixed top-0 right-0 bottom-0 z-20 w-[85%] max-w-sm bg-[#1B2838]/95 backdrop-blur-xl shadow-2xl transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
           menuOpen ? 'translate-x-0' : 'translate-x-full'
         }`}
       >
@@ -115,9 +117,9 @@ export default function ChurchHero() {
             <a
               href="#contribute"
               onClick={(e) => { e.preventDefault(); setMenuOpen(false); setShowGive(true); }}
-              className="mt-2 bg-[#85AB8B] hover:bg-[#6d9a74] text-[#1f2a1d] text-sm font-semibold px-5 py-3 rounded-full transition-colors text-center"
+              className="mt-2 bg-[#5B9BD5] hover:bg-[#6d9a74] text-[#1B2838] text-sm font-semibold px-5 py-3 rounded-full transition-colors text-center"
             >
-              Give Now
+              {t('Give Now', 'Toa Sasa')}
             </a>
           </div>
         </div>
@@ -126,9 +128,9 @@ export default function ChurchHero() {
       {/* Hero content */}
       <div className="relative z-10 flex flex-col items-center text-center pt-12 sm:pt-16 md:pt-20 px-4 sm:px-6 pb-8">
         <div className="animate-fade-in">
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 backdrop-blur-sm px-4 py-1.5 text-xs font-semibold tracking-widest text-[#85AB8B] uppercase border border-white/10">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 backdrop-blur-sm px-4 py-1.5 text-xs font-semibold tracking-widest text-[#5B9BD5] uppercase border border-white/10">
             <Heart size={12} />
-            2026 Harambee · Tujenge Pamoja
+            2026 {t('Harambee', 'Harambee')} · Tujenge Pamoja
           </span>
         </div>
         <h1
@@ -136,13 +138,13 @@ export default function ChurchHero() {
           style={{ fontFamily: '"Neue Haas Grotesk Display Pro 55 Roman", "Neue Haas Grotesk Text Pro", "Helvetica Neue", Helvetica, Arial, sans-serif', letterSpacing: '-0.035em' }}
         >
           AIPCA{' '}
-          <span className="text-[#85AB8B]">
+          <span className="text-[#5B9BD5]">
             Bahati
             <br className="hidden sm:block" /> Cathedral
           </span>
         </h1>
         <p className="mt-6 sm:mt-8 text-white/70 text-sm sm:text-base md:text-lg leading-relaxed max-w-md px-2">
-          <span className="italic text-[#85AB8B]/80">&ldquo;Unless the Lord builds the house, its builders labour in vain.&rdquo;</span>
+          <span className="italic text-[#5B9BD5]/80">&ldquo;Unless the Lord builds the house, its builders labour in vain.&rdquo;</span>
           <br />
           <span className="text-white/50">Psalm 127:1</span>
         </p>
@@ -152,9 +154,9 @@ export default function ChurchHero() {
       <div className="relative z-10 flex items-center justify-center px-4 pb-8">
         <button
           onClick={() => setShowGive(true)}
-          className="bg-white hover:bg-white/90 text-[#1f2a1d] text-sm font-semibold px-5 sm:px-6 py-2.5 sm:py-3 rounded-full transition-colors shadow-sm"
+          className="bg-white hover:bg-white/90 text-[#1B2838] text-sm font-semibold px-5 sm:px-6 py-2.5 sm:py-3 rounded-full transition-colors shadow-sm"
         >
-          Give to the Harambee
+          {t('Give to the Harambee', 'Toa kwa Harambee')}
         </button>
       </div>
 
