@@ -80,6 +80,27 @@ donationsRouter.post("/", async (req, res) => {
   }
 });
 
+donationsRouter.get("/lookup/phone/:phone", async (req, res) => {
+  try {
+    const db = requireService();
+    const phone = req.params.phone.replace(/\D/g, "");
+    const normalized = phone.startsWith("0") ? "254" + phone.slice(1) : phone.startsWith("254") ? phone : "254" + phone;
+
+    const { data } = await db
+      .from("donations")
+      .select("donor_name")
+      .eq("phone", normalized)
+      .not("donor_name", "is", null)
+      .order("created_at", { ascending: false })
+      .limit(1);
+
+    const name = data?.[0]?.donor_name || null;
+    res.json({ name });
+  } catch {
+    res.json({ name: null });
+  }
+});
+
 donationsRouter.patch("/:id/status", requireAdmin, async (req, res) => {
   try {
     const db = requireService();

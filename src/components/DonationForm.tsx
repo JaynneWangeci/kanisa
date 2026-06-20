@@ -150,6 +150,24 @@ export default function DonationForm() {
     }
   }, [tab, honoredMember, genSelectedMember]);
 
+  // Phone → name auto-fill: when user types a phone, look up their name from previous donations
+  useEffect(() => {
+    const raw = tab === "general" ? genPhone : honPhone;
+    const digits = raw.replace(/\D/g, "");
+    if (digits.length < 10) return;
+    const timer = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/donations/lookup/phone/${digits}`);
+        const data = await res.json();
+        if (data.name) {
+          if (tab === "general") setGenMemberSearch(prev => prev || data.name);
+          else setHonName(prev => prev || data.name);
+        }
+      } catch {}
+    }, 600);
+    return () => clearTimeout(timer);
+  }, [genPhone, honPhone, tab]);
+
   const pollStatus = useCallback((checkoutId: string) => {
     let attempts = 0;
     const maxAttempts = 100;
