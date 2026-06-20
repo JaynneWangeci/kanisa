@@ -419,12 +419,8 @@ export default function PledgeBoard() {
             {result && (
               <div className="mx-auto mt-6 max-w-lg">
                 <div className="rounded-xl border border-gray-100 bg-gray-50/50 p-4">
-                  <div className="mb-3 flex items-center justify-between">
+                  <div className="mb-3">
                     <p className="text-xs font-bold text-gray-500 uppercase">{t('Your Contributions', 'Michango Yako')}</p>
-                    <button onClick={() => setPortfolioName(search.trim())}
-                      className="flex items-center gap-1 text-xs font-bold text-blue-600 hover:text-blue-700 transition-colors">
-                      <ExternalLink size={12} /> {t('Full Portfolio', 'Wasifu Kamili')}
-                    </button>
                   </div>
 
                   {result.pledges.length > 0 && (
@@ -481,6 +477,12 @@ export default function PledgeBoard() {
                     <p className="text-xs text-gray-400 text-center py-4">{t('No records found for this name', 'Hakuna rekodi zilizopatikana kwa jina hili')}</p>
                   )}
                 </div>
+                {result && (result.pledges.length > 0 || result.donations?.length > 0 || result.honoured?.length > 0) && (
+                  <button onClick={() => setPortfolioName(search.trim())}
+                    className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 py-3 text-sm font-bold text-white hover:bg-blue-700 transition-all">
+                    <ExternalLink size={18} /> {t('View Full Portfolio', 'Tazama Wasifu Kamili')}
+                  </button>
+                )}
               </div>
             )}
           </div>
