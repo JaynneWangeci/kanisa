@@ -72,17 +72,25 @@ export default function DonationForm() {
   const selectedMember = members.find((m) => m.id === honoredMember);
   const genSelected = members.find((m) => m.id === genSelectedMember);
 
-  const filteredMembers = memberSearch
-    ? members.filter((m) =>
-        m.name.toLowerCase().includes(memberSearch.toLowerCase())
-      )
-    : members;
+  function scoreName(name: string, query: string): number {
+    const n = name.toLowerCase();
+    const q = query.toLowerCase();
+    if (n === q) return 3;
+    if (n.startsWith(q)) return 2;
+    if (n.includes(q)) return 1;
+    return 0;
+  }
 
-  const genFilteredMembers = genMemberSearch
-    ? members.filter((m) =>
-        m.name.toLowerCase().includes(genMemberSearch.toLowerCase())
-      )
-    : members;
+  function sortByQuery(members: MemberOption[], query: string): MemberOption[] {
+    if (!query) return members;
+    return members
+      .map(m => ({ ...m, _score: scoreName(m.name, query) }))
+      .filter(m => m._score > 0)
+      .sort((a, b) => b._score - 1 - (a._score - 1) || a.name.localeCompare(b.name));
+  }
+
+  const filteredMembers = sortByQuery(members, memberSearch);
+  const genFilteredMembers = sortByQuery(members, genMemberSearch);
 
   const groupedMembers = filteredMembers.reduce((acc, m) => {
     (acc[m.council] = acc[m.council] || []).push(m);
@@ -94,9 +102,7 @@ export default function DonationForm() {
     return acc;
   }, {} as Record<string, MemberOption[]>);
 
-  const honNameFiltered = honNameSearch
-    ? members.filter(m => m.name.toLowerCase().includes(honNameSearch.toLowerCase()))
-    : members;
+  const honNameFiltered = sortByQuery(members, honNameSearch);
 
   const honNameGrouped = honNameFiltered.reduce((acc, m) => {
     (acc[m.council] = acc[m.council] || []).push(m);
@@ -379,10 +385,17 @@ export default function DonationForm() {
                           className="w-full rounded-xl border-2 border-gray-200 bg-white py-3 pl-9 pr-3 text-sm text-nobuk outline-none transition focus:border-nobuk placeholder:text-muted/60" />
                       </div>
 
-                      {genMemberOpen && genFilteredMembers.length > 0 && (
+                      {genMemberOpen && (
                         <div className="absolute z-20 mt-1 w-full overflow-hidden rounded-xl border-2 border-gray-200 bg-white shadow-xl animate-scale-in">
                           <div className="max-h-64 overflow-y-auto divide-y divide-gray-100">
-                            {councilOrder.map(council => {
+                            {genFilteredMembers.length === 0 ? (
+                              <div className="px-4 py-8 text-center">
+                                <User size={20} className="mx-auto mb-2 text-amber/40" />
+                                <p className="text-sm font-medium text-nobuk">{genMemberSearch || "Type a name..."}</p>
+                                <p className="text-xs text-muted/70 mt-1">Will be added as a new member on submit</p>
+                              </div>
+                            ) : (
+                            councilOrder.map(council => {
                               const councilMembers = genGroupedMembers[council];
                               if (!councilMembers?.length) return null;
                               const meta = councilMeta[council] || { label: council, icon: Medal };
@@ -417,7 +430,7 @@ export default function DonationForm() {
                                   ))}
                                 </div>
                               );
-                            })}
+                            }))}
                           </div>
                         </div>
                       )}
