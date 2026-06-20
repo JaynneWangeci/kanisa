@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
-import { X, Heart, User, Phone, MessageSquare, Check, Loader2, ChevronDown, Search } from 'lucide-react';
+import { X, Heart, User, Phone, MessageSquare, Check, Loader2, ChevronDown, Search, Church, Users, Medal } from 'lucide-react';
 
 type Step = 'form' | 'processing' | 'success';
 
@@ -17,6 +17,13 @@ function formatPhone(value: string): string {
   if (digits.length <= 6) return `${digits.slice(0, 3)} ${digits.slice(3)}`;
   return `${digits.slice(0, 3)} ${digits.slice(3, 6)} ${digits.slice(6)}`;
 }
+
+const councilMeta: Record<string, { label: string; icon: typeof Church }> = {
+  parish_board: { label: 'Parish Board', icon: Church },
+  women_council: { label: "Women's Council", icon: Users },
+  men_council: { label: "Men's Council", icon: Users },
+  development: { label: 'Development Committee', icon: Medal },
+};
 
 interface Props {
   member: Member;
@@ -70,6 +77,15 @@ export default function DonationModal({ member, onClose, donorName: initialDonor
         .filter(m => m._score > 0)
         .sort((a, b) => b._score - a._score || a.name.localeCompare(b.name))
     : memberList;
+
+  const grouped = nameFiltered.reduce((acc: Record<string, Member[]>, m) => {
+    const key = m.council || 'other';
+    (acc[key] = acc[key] || []).push(m);
+    return acc;
+  }, {});
+  const councilOrder = Object.keys(councilMeta).filter(c => grouped[c]?.length);
+  const extraCouncils = Object.keys(grouped).filter(c => !councilMeta[c]);
+  const allCouncils = [...councilOrder, ...extraCouncils];
 
   function initials(n: string): string {
     return n.split(' ').map(x => x[0]).join('').toUpperCase().slice(0, 2);
@@ -262,23 +278,37 @@ export default function DonationModal({ member, onClose, donorName: initialDonor
                 {showNameDropdown && (
                   <div className="absolute top-full left-0 right-0 z-30 mt-1 overflow-hidden rounded-xl border border-[#2C4056]/10 bg-white shadow-lg">
                     <div className="max-h-48 overflow-y-auto divide-y divide-[#2C4056]/5">
-                      {nameFiltered.length > 0 ? nameFiltered.map(m => (
-                        <button key={m.id} type="button"
-                          onClick={() => { setName(m.name); setShowNameDropdown(false); }}
-                          className={`flex w-full items-center gap-3 px-4 py-2.5 text-left transition-all hover:bg-[#5B9BD5]/5 ${
-                            name === m.name ? 'bg-[#5B9BD5]/10 font-bold' : ''
-                          }`}>
-                          <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
-                            name === m.name ? 'bg-[#1E6F9F] text-white' : 'bg-[#5B9BD5]/20 text-[#1E6F9F]'
-                          }`}>
-                            {initials(m.name)}
+                      {allCouncils.length > 0 ? allCouncils.map(council => {
+                        const councilMembers = grouped[council];
+                        if (!councilMembers?.length) return null;
+                        const meta = councilMeta[council] || { label: council.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()), icon: Church };
+                        const Icon = meta.icon;
+                        return (
+                          <div key={council}>
+                            <div className="sticky top-0 flex items-center gap-2 bg-[#5B9BD5]/10 px-4 py-1.5">
+                              <Icon size={12} className="text-[#1E6F9F]" />
+                              <span className="text-xs font-bold text-[#1E6F9F] uppercase tracking-wider">{meta.label}</span>
+                            </div>
+                            {councilMembers.map(m => (
+                              <button key={m.id} type="button"
+                                onClick={() => { setName(m.name); setShowNameDropdown(false); }}
+                                className={`flex w-full items-center gap-3 px-4 py-2.5 text-left transition-all hover:bg-[#5B9BD5]/5 ${
+                                  name === m.name ? 'bg-[#5B9BD5]/10 font-bold' : ''
+                                }`}>
+                                <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
+                                  name === m.name ? 'bg-[#1E6F9F] text-white' : 'bg-[#5B9BD5]/20 text-[#1E6F9F]'
+                                }`}>
+                                  {initials(m.name)}
+                                </div>
+                                <p className={`text-sm ${name === m.name ? 'text-[#1B2838]' : 'text-[#1B2838] font-medium'}`}>{m.name}</p>
+                                {name === m.name && <Check size={14} className="ml-auto text-[#1E6F9F]" />}
+                              </button>
+                            ))}
                           </div>
-                          <p className={`text-sm ${name === m.name ? 'text-[#1B2838]' : 'text-[#1B2838] font-medium'}`}>{m.name}</p>
-                          {name === m.name && <Check size={14} className="ml-auto text-[#1E6F9F]" />}
-                        </button>
-                      )) : nameSearch.trim() && (
+                        );
+                      }) : nameSearch.trim() && (
                         <div className="px-4 py-4 text-center text-xs text-[#5B6F88]">
-                          Will be added as a new member
+                          Will be added as a new member: "<span className="font-bold text-[#1B2838]">{nameSearch}</span>"
                         </div>
                       )}
                     </div>
@@ -320,7 +350,7 @@ export default function DonationModal({ member, onClose, donorName: initialDonor
                 className="btn-lift w-full rounded-full bg-[#1B2838] py-3.5 text-base font-bold text-white shadow-sm hover:bg-[#3B5A7A] disabled:cursor-not-allowed disabled:opacity-40"
               >
                 {isGeneral
-                  ? `Give KES ${(amount === 'custom' ? Number(customAmount) || 0 : amount || 0).toLocaleString()} via M-Pesa`
+                  ? `Honour with KES ${(amount === 'custom' ? Number(customAmount) || 0 : amount || 0).toLocaleString()} via M-Pesa`
                   : `Honour ${member.name} with KES ${(amount === 'custom' ? Number(customAmount) || 0 : amount || 0).toLocaleString()}`}
               </button>
 
@@ -341,7 +371,7 @@ export default function DonationModal({ member, onClose, donorName: initialDonor
                 <Loader2 size={32} className="animate-spin text-[#1E6F9F]" />
               </div>
               <h3 className="text-lg font-bold text-[#1B2838]">
-                {isGeneral ? 'Processing your gift...' : `Honouring ${member.name}...`}
+                {isGeneral ? 'Processing your honour gift...' : `Honouring ${member.name}...`}
               </h3>
               <p className="mt-2 text-sm text-[#5B6F88]">Check your phone for the M-Pesa PIN prompt</p>
               <p className="mt-1 text-sm font-semibold text-[#1E6F9F]">KES {finalAmount.toLocaleString()}</p>
@@ -361,7 +391,7 @@ export default function DonationModal({ member, onClose, donorName: initialDonor
               </h3>
               <p className="mt-2 text-sm text-[#5B6F88]">
                 {isGeneral
-                  ? `Your gift of KES ${finalAmount.toLocaleString()} has been received.`
+                  ? `Your honour gift of KES ${finalAmount.toLocaleString()} has been received.`
                   : `Your honour gift of KES ${finalAmount.toLocaleString()} for ${member.name} has been received.`}
               </p>
               {!isGeneral && (

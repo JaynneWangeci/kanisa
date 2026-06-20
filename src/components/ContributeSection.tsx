@@ -90,8 +90,8 @@ export default function ContributeSection() {
 
   function getSelectionTitle(): string {
     if (selectedMember) return `${t('Honouring', 'Kumheshimu')}: ${selectedMember.name}`;
-    if (inputValue.trim()) return `${t('Giving in my name', 'Natoa kwa jina langu')}: ${inputValue.trim()}`;
-    return t('Give to the Harambee', 'Toa kwa Harambee');
+    if (inputValue.trim()) return `${t('Honouring', 'Kumheshimu')}: ${inputValue.trim()}`;
+    return t('Select a member to honour', 'Chagua mwanajumuiya');
   }
 
   const [showPledgeForm, setShowPledgeForm] = useState(false);
@@ -118,7 +118,7 @@ export default function ContributeSection() {
         } catch {}
         setAutoAdding(false);
       }
-      setSelectedMember({ id: 'general', name: 'General Harambee Fund', council: '' });
+      setSelectedMember({ id: 'general', name: inputValue.trim(), council: '' });
       setShowModal(true);
     }
   }
@@ -129,14 +129,14 @@ export default function ContributeSection() {
         <div className="mx-auto max-w-6xl">
           <div className="mx-auto mb-12 max-w-xl text-center">
             <span className="inline-flex items-center gap-1.5 rounded-full bg-[#5B9BD5]/10 px-4 py-1.5 text-xs font-bold text-[#1E6F9F] uppercase tracking-widest">
-              <Medal size={12} />
-              {t('Contribute', 'Changia')}
+              <Heart size={12} />
+              {t('Honour', 'Heshima')}
             </span>
             <h2 className="mt-4 text-3xl font-bold text-[#1B2838] md:text-4xl" style={{ fontFamily: '"Neue Haas Grotesk Display Pro 55 Roman", "Neue Haas Grotesk Text Pro", "Helvetica Neue", Helvetica, Arial, sans-serif', letterSpacing: '-0.02em' }}>
-              {t('Give to the Harambee', 'Toa kwa Harambee')}
+              {t('Honour a Church Member', 'Mheshimu Mwanajumuiya')}
             </h2>
             <p className="mx-auto mt-2 max-w-sm text-sm text-[#5B6F88]">
-              {t('Give in your name or honour a church member with your contribution.', 'Toa kwa jina lako au mheshimu mwanajumuiya kwa mchango wako.')}
+              {t('Select a church member below and make a contribution in their honour.', 'Chagua mwanajumuiya hapa chini na utoe mchango kwa heshima yake.')}
             </p>
           </div>
 
@@ -256,10 +256,10 @@ export default function ContributeSection() {
             <div className={`mt-8 text-center ${inView ? 'animate-fade-in' : 'opacity-0'}`} style={{ animationDelay: '0.2s' }}>
               <button
                 onClick={handleContribute}
-                disabled={autoAdding || !inputValue.trim()}
+                disabled={autoAdding || !inputValue.trim() || !selectedMember}
                 className="btn-lift w-full rounded-full bg-[#1B2838] px-8 py-4 text-base font-bold text-white shadow-sm hover:bg-[#3B5A7A] disabled:cursor-not-allowed disabled:opacity-40"
               >
-                {autoAdding ? t('Saving name...', 'Inahifadhi jina...') : t('Continue to Give', 'Endelea Kutoa')}
+                {autoAdding ? t('Saving name...', 'Inahifadhi jina...') : t('Continue to Honour', 'Endelea Kumheshimu')}
               </button>
             </div>
           </div>
@@ -268,8 +268,9 @@ export default function ContributeSection() {
           <div className={`mt-10 text-center ${inView ? 'animate-fade-in' : 'opacity-0'}`} style={{ animationDelay: '0.5s' }}>
             <div className="mx-auto max-w-lg rounded-2xl border border-white/20 bg-white/70 backdrop-blur-md p-8 shadow-sm">
               <Heart size={24} className="mx-auto mb-3 text-[#1E6F9F]" />
-              <h3 className="text-xl font-bold text-[#1B2838]">{t('Or give directly via M-Pesa', 'Au toa moja kwa moja kupitia M-Pesa')}</h3>
+              <h3 className="text-xl font-bold text-[#1B2838]">{t('Or honour via M-Pesa', 'Au heshimu kupitia M-Pesa')}</h3>
               <p className="mt-1 text-lg font-bold text-[#1E6F9F]">Paybill: 835 872</p>
+              <p className="mt-1 text-xs text-[#5B6F88]">{t('Account: Your Name', 'Akaunti: Jina Lako')}</p>
             </div>
           </div>
 
