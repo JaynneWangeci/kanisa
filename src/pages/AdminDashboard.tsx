@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   TrendingUp, Users, DollarSign, Clock, AlertCircle,
-  Download, LogOut, RefreshCw, Shield, UserPlus, Trash2, Medal, Church, Settings, BarChart3, FileText, Presentation, Search, ScanSearch, ArrowUpRight, ArrowDownRight, PieChart, Target,
+  Download, LogOut, RefreshCw, Shield, UserPlus, Trash2, Medal, Church, Settings, BarChart3, FileText, Presentation, FileSpreadsheet, Search, ScanSearch, ArrowUpRight, ArrowDownRight, PieChart, Target,
 } from "lucide-react";
 import {
   AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart as RePie, Pie, Cell, Legend,
@@ -374,8 +374,8 @@ export default function AdminDashboard() {
   for (const c of councils) councilLabels[c.slug] = c.name;
   if (!councils.length) {
     councilLabels.parish_board = "Parish Board";
-    councilLabels.women_council = "Women's Council";
-    councilLabels.men_council = "Men's Council";
+    councilLabels.women_council = "Women's Fellowship";
+    councilLabels.men_council = "Men's Fellowship";
     councilLabels.development = "Development Committee";
   }
 
@@ -1452,6 +1452,23 @@ export default function AdminDashboard() {
                   }} disabled={exporting === "ppt"}
                     className="flex items-center gap-1 rounded-lg border border-gray-200 px-2.5 py-1.5 text-xs font-semibold text-muted hover:bg-cream disabled:opacity-40">
                     <Presentation size={14} /> {exporting === "ppt" ? "..." : "PPT"}
+                  </button>
+                  <button onClick={async () => {
+                    setExporting("xlsx");
+                    try {
+                      const res = await fetch("/api/contributions/export/xlsx", { headers: { Authorization: `Bearer ${token}` } });
+                      if (!res.ok) return;
+                      const blob = await res.blob();
+                      const a = document.createElement("a");
+                      a.href = URL.createObjectURL(blob);
+                      a.download = `harambee-report-${new Date().toISOString().slice(0, 10)}.xlsx`;
+                      a.click();
+                      URL.revokeObjectURL(a.href);
+                    } catch {}
+                    setExporting(null);
+                  }} disabled={exporting === "xlsx"}
+                    className="flex items-center gap-1 rounded-lg border border-gray-200 px-2.5 py-1.5 text-xs font-semibold text-muted hover:bg-cream disabled:opacity-40">
+                    <FileSpreadsheet size={14} /> {exporting === "xlsx" ? "..." : "XLSX"}
                   </button>
                 </div>
               </div>

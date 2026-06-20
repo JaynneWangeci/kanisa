@@ -30,8 +30,8 @@ const seedMembers: Member[] = [
 
 const defaultCouncilLabels: Record<string, { label: string; icon: typeof Church; color: string }> = {
   parish_board: { label: "Parish Board", icon: Church, color: "bg-nobuk-muted text-nobuk" },
-  women_council: { label: "Women's Council", icon: Users, color: "bg-amber/20 text-amber-dark" },
-  men_council: { label: "Men's Council", icon: Users, color: "bg-gray-200 text-muted" },
+  women_council: { label: "Women's Fellowship", icon: Users, color: "bg-amber/20 text-amber-dark" },
+  men_council: { label: "Men's Fellowship", icon: Users, color: "bg-gray-200 text-muted" },
   development: { label: "Development Committee", icon: Medal, color: "bg-amber-light text-amber-dark" },
 };
 

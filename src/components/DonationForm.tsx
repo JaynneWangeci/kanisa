@@ -15,8 +15,8 @@ interface MemberOption {
 
 const councilMeta: Record<string, { label: string; icon: typeof Church }> = {
   parish_board: { label: "Parish Board", icon: Church },
-  women_council: { label: "Women's Council", icon: Users },
-  men_council: { label: "Men's Council", icon: Users },
+  women_council: { label: "Women's Fellowship", icon: Users },
+  men_council: { label: "Men's Fellowship", icon: Users },
   development: { label: "Development Committee", icon: Medal },
 };
 

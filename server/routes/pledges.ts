@@ -82,12 +82,15 @@ pledgesRouter.get("/:name", async (req, res) => {
 
     if (error) return res.status(500).json({ error: error.message });
 
-    const { data: honoured } = await db
-      .from("donations")
-      .select("id, donor_name, amount, phone, created_at, church_members!inner(name)")
-      .eq("status", "completed")
-      .ilike("church_members.name", `%${req.params.name}%`)
-      .order("created_at", { ascending: false });
+    const { data: honouredMembers } = await db
+      .from("church_members")
+      .select("id")
+      .ilike("name", `%${req.params.name}%`);
+    const honouredIds = (honouredMembers || []).map(m => m.id);
+
+    const { data: honoured } = honouredIds.length
+      ? await db.from("donations").select("id, donor_name, amount, phone, created_at").eq("status", "completed").in("honored_member_id", honouredIds).order("created_at", { ascending: false })
+      : { data: [] };
 
     res.json({ pledges: pledges || [], honoured: honoured || [] });
   } catch (err) {
@@ -108,19 +111,32 @@ pledgesRouter.get("/search/name", async (req, res) => {
       .ilike("donor_name", `%${q}%`)
       .order("amount", { ascending: false });
 
-    const { data: donations } = await db
-      .from("donations")
-      .select("id, donor_name, amount, created_at, honored_member_id, receipt_number, phone")
-      .eq("status", "completed")
-      .or(`donor_name.ilike.%${q}%,honored_member_id.in.(select id from church_members where name ilike '%${q}%')`)
-      .order("created_at", { ascending: false });
+    const [
+      { data: donationsByName },
+      { data: honourMemberIds },
+    ] = await Promise.all([
+      db.from("donations").select("id, donor_name, amount, created_at, honored_member_id, receipt_number, phone").eq("status", "completed").ilike("donor_name", `%${q}%`),
+      db.from("church_members").select("id").ilike("name", `%${q}%`),
+    ]);
 
-    const { data: honoured } = await db
-      .from("donations")
-      .select("id, donor_name, amount, phone, created_at, church_members!inner(name)")
-      .eq("status", "completed")
-      .ilike("church_members.name", `%${q}%`)
-      .order("created_at", { ascending: false });
+    const honourIds2 = (honourMemberIds || []).map(m => m.id);
+    const { data: donationsByHonour } = honourIds2.length
+      ? await db.from("donations").select("id, donor_name, amount, created_at, honored_member_id, receipt_number, phone").eq("status", "completed").in("honored_member_id", honourIds2)
+      : { data: [] };
+
+    const donationMap = new Map<string, any>();
+    for (const d of [...(donationsByName || []), ...(donationsByHonour || [])]) donationMap.set(d.id, d);
+    const donations = Array.from(donationMap.values()).sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
+    const { data: honouredMembers } = await db
+      .from("church_members")
+      .select("id")
+      .ilike("name", `%${q}%`);
+    const honouredIds = (honouredMembers || []).map(m => m.id);
+
+    const { data: honoured } = honouredIds.length
+      ? await db.from("donations").select("id, donor_name, amount, phone, created_at").eq("status", "completed").in("honored_member_id", honouredIds).order("created_at", { ascending: false })
+      : { data: [] };
 
     res.json({ pledges: pledges || [], donations: donations || [], honoured: honoured || [] });
   } catch (err) {

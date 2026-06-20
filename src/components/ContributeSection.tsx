@@ -13,8 +13,8 @@ interface Member {
 
 const councilMeta: Record<string, { label: string; icon: typeof Church; color: string }> = {
   parish_board: { label: 'Parish Board', icon: Church, color: 'bg-[#1E6F9F] text-white' },
-  women_council: { label: "Women's Council", icon: Users, color: 'bg-[#5B9BD5] text-white' },
-  men_council: { label: "Men's Council", icon: Users, color: 'bg-[#3A5A7A] text-white' },
+  women_council: { label: "Women's Fellowship", icon: Users, color: 'bg-[#5B9BD5] text-white' },
+  men_council: { label: "Men's Fellowship", icon: Users, color: 'bg-[#3A5A7A] text-white' },
   development: { label: 'Development Committee', icon: Medal, color: 'bg-[#2C4056] text-white' },
 };
 

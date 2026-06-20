@@ -59,13 +59,13 @@ analyticsRouter.get("/dashboard", requireAdmin, async (req, res) => {
 
       // Council breakdown
       db.from("donations")
-        .select("amount, church_members!inner(council)")
+        .select("amount, church_members!church_member_id!inner(council)")
         .eq("status", "completed")
         .not("church_member_id", "is", null),
 
       // Member honour ranking
       db.from("donations")
-        .select("amount, church_member_id, church_members!inner(name, council)")
+        .select("amount, church_member_id, church_members!church_member_id!inner(name, council)")
         .eq("status", "completed")
         .not("church_member_id", "is", null),
 
@@ -81,12 +81,12 @@ analyticsRouter.get("/dashboard", requireAdmin, async (req, res) => {
       // Member count
       db.from("church_members")
         .select("id", { count: "exact", head: false })
-        .eq("active", true),
+        .eq("is_active", true),
 
       // New members in last 30d
       db.from("church_members")
         .select("id", { count: "exact", head: false })
-        .eq("active", true)
+        .eq("is_active", true)
         .gte("created_at", periods["30d"].toISOString()),
     ]);
 
