@@ -703,13 +703,13 @@ export default function DonationForm() {
                 </div>
               </form>
 
-              {showPledgeForm ? (
+              {showPledgeForm && (
                 <PledgeForm
                   donorName={(honName || honoredMember) ? selectedMember?.name : ''}
                   onClose={() => setShowPledgeForm(false)}
                   onCreated={()=>{}}
                 />
-              ) : null}
+              )}
             )}
           </div>
         )}
