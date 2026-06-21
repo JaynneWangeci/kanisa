@@ -29,7 +29,7 @@ export default function AdminDashboard() {
   const [logs, setLogs] = useState<unknown[]>([]);
   const [loading, setLoading] = useState(true);
   const [exportOpen, setExportOpen] = useState(false);
-  const [tab, setTab] = useState<"overview" | "members" | "admins" | "analytics" | "council">("overview");
+  const [tab, setTab] = useState<"overview" | "members" | "admins" | "analytics" | "council" | "pledges">("overview");
   const [churchMembers, setChurchMembers] = useState<ChurchMember[]>([]);
   const [newName, setNewName] = useState("");
   const [newCouncil, setNewCouncil] = useState("maranatha_fellowship");
@@ -88,6 +88,12 @@ export default function AdminDashboard() {
   const [editComOrder, setEditComOrder] = useState("0");
   const [exporting, setExporting] = useState<string | null>(null);
   const exportRef = useRef<HTMLDivElement>(null);
+  const [pledges, setPledges] = useState<any[]>([]);
+  const [editingPledge, setEditingPledge] = useState<string | null>(null);
+  const [editPledgeAmount, setEditPledgeAmount] = useState("");
+  const [payingPledge, setPayingPledge] = useState<string | null>(null);
+  const [payAmount, setPayAmount] = useState("");
+  const [payReceipt, setPayReceipt] = useState("");
 
   const token = localStorage.getItem("token");
 
@@ -172,6 +178,16 @@ export default function AdminDashboard() {
     } catch { /* silent */ }
   }, []);
 
+  const fetchPledges = useCallback(async () => {
+    try {
+      const res = await fetch("/api/pledges");
+      if (res.ok) {
+        const data = await res.json();
+        setPledges(data.pledges || []);
+      }
+    } catch { /* silent */ }
+  }, []);
+
   const loadCouncils = useCallback(async () => {
     const data = await fetchCouncils();
     if (data.length) setCouncils(data);
@@ -198,9 +214,10 @@ export default function AdminDashboard() {
     fetchAdmins();
     fetchAnalytics();
     fetchCommittee();
+    fetchPledges();
     loadCouncils();
     loadHarambee();
-  }, [admin, fetchStats, fetchLogs, fetchMembers, fetchAdmins, fetchAnalytics, fetchCommittee, loadCouncils, loadHarambee]);
+  }, [admin, fetchStats, fetchLogs, fetchMembers, fetchAdmins, fetchAnalytics, fetchCommittee, fetchPledges, loadCouncils, loadHarambee]);
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
@@ -480,6 +497,17 @@ export default function AdminDashboard() {
             >
               <Users size={14} className="inline mr-1" />
               Fellowship ({committeeMembers.length})
+            </button>
+          )}
+          {(admin.role === "admin" || admin.role === "super_admin") && (
+            <button
+              onClick={() => setTab("pledges")}
+              className={`pb-3 text-sm font-bold transition border-b-2 ${
+                tab === "pledges" ? "border-nobuk text-nobuk" : "border-transparent text-muted hover:text-nobuk"
+              }`}
+            >
+              <Target size={14} className="inline mr-1" />
+              Pledges ({pledges.length})
             </button>
           )}
           <button
@@ -1449,6 +1477,111 @@ export default function AdminDashboard() {
             </div>
           </div>
           </>
+        )}
+
+        {tab === "pledges" && (
+          <div className="space-y-6">
+            <div className="rounded-xl border border-gray-100 bg-white p-5 shadow-sm">
+              <div className="mb-4 flex items-center justify-between">
+                <h2 className="text-sm font-bold text-ink">All Pledges ({pledges.length})</h2>
+                <button onClick={() => { setPledges([]); fetchPledges(); }}
+                  className="flex items-center gap-1 text-xs font-semibold text-nobuk hover:underline">
+                  <RefreshCw size={12} /> Refresh
+                </button>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-sm">
+                  <thead>
+                    <tr className="border-b border-gray-100 text-xs text-muted">
+                      <th className="pb-2 font-semibold">Donor</th>
+                      <th className="pb-2 font-semibold">Amount</th>
+                      <th className="pb-2 font-semibold">Paid</th>
+                      <th className="pb-2 font-semibold">Remaining</th>
+                      <th className="pb-2 font-semibold">Status</th>
+                      <th className="pb-2 font-semibold">Date</th>
+                      <th className="pb-2 font-semibold">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-50">
+                    {pledges.map((p) => (
+                      <tr key={p.id} className="hover:bg-gray-50/50">
+                        <td className="py-2.5 pr-3 font-medium text-nobuk">{p.donor_name}</td>
+                        <td className="py-2.5 pr-3">
+                          {editingPledge === p.id ? (
+                            <input type="number" value={editPledgeAmount} onChange={e => setEditPledgeAmount(e.target.value)}
+                              className="w-24 rounded border border-gray-200 px-2 py-1 text-sm outline-none focus:border-nobuk" />
+                          ) : (
+                            <span className="font-mono">KES {Number(p.amount).toLocaleString()}</span>
+                          )}
+                        </td>
+                        <td className="py-2.5 pr-3 font-mono text-green-700">KES {Number(p.paid).toLocaleString()}</td>
+                        <td className="py-2.5 pr-3 font-mono text-amber-dark">KES {Number(p.remaining).toLocaleString()}</td>
+                        <td className="py-2.5 pr-3">
+                          <span className={`inline-block rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                            p.status === "fulfilled" ? "bg-green-100 text-green-800" :
+                            p.status === "active" ? "bg-blue-100 text-blue-800" :
+                            "bg-gray-100 text-gray-600"
+                          }`}>{p.status}</span>
+                        </td>
+                        <td className="py-2.5 pr-3 text-xs text-muted">{new Date(p.created_at).toLocaleDateString()}</td>
+                        <td className="py-2.5">
+                          <div className="flex items-center gap-1">
+                            {editingPledge === p.id ? (
+                              <>
+                                <button onClick={async () => {
+                                  try {
+                                    const token = localStorage.getItem("token");
+                                    const res = await fetch(`/api/pledges/${p.id}`, {
+                                      method: "PATCH", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+                                      body: JSON.stringify({ amount: Number(editPledgeAmount) }),
+                                    });
+                                    if (res.ok) { setEditingPledge(null); fetchPledges(); }
+                                  } catch {}
+                                }} className="rounded bg-nobuk px-2 py-1 text-[10px] font-bold text-white hover:bg-nobuk-light">Save</button>
+                                <button onClick={() => setEditingPledge(null)}
+                                  className="rounded bg-gray-100 px-2 py-1 text-[10px] font-bold text-muted hover:bg-gray-200">Cancel</button>
+                              </>
+                            ) : payingPledge === p.id ? (
+                              <>
+                                <input type="number" placeholder="Amount" value={payAmount} onChange={e => setPayAmount(e.target.value)}
+                                  className="w-20 rounded border border-gray-200 px-1.5 py-1 text-xs outline-none focus:border-nobuk" />
+                                <input type="text" placeholder="Receipt" value={payReceipt} onChange={e => setPayReceipt(e.target.value)}
+                                  className="w-20 rounded border border-gray-200 px-1.5 py-1 text-xs outline-none focus:border-nobuk" />
+                                <button onClick={async () => {
+                                  try {
+                                    const token = localStorage.getItem("token");
+                                    const res = await fetch(`/api/pledges/${p.id}/pay`, {
+                                      method: "PATCH", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+                                      body: JSON.stringify({ amount: Number(payAmount), receipt_number: payReceipt }),
+                                    });
+                                    if (res.ok) { setPayingPledge(null); setPayAmount(""); setPayReceipt(""); fetchPledges(); }
+                                  } catch {}
+                                }} disabled={!payAmount} className="rounded bg-green-700 px-2 py-1 text-[10px] font-bold text-white hover:bg-green-800 disabled:opacity-40">Pay</button>
+                                <button onClick={() => { setPayingPledge(null); setPayAmount(""); setPayReceipt(""); }}
+                                  className="rounded bg-gray-100 px-2 py-1 text-[10px] font-bold text-muted hover:bg-gray-200">Cancel</button>
+                              </>
+                            ) : (
+                              <>
+                                <button onClick={() => { setEditingPledge(p.id); setEditPledgeAmount(String(p.amount)); }}
+                                  className="rounded bg-blue-100 px-2 py-1 text-[10px] font-bold text-blue-700 hover:bg-blue-200">Edit</button>
+                                {p.status !== "fulfilled" && (
+                                  <button onClick={() => setPayingPledge(p.id)}
+                                    className="rounded bg-green-100 px-2 py-1 text-[10px] font-bold text-green-700 hover:bg-green-200">Pay</button>
+                                )}
+                              </>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                    {pledges.length === 0 && (
+                      <tr><td colSpan={7} className="py-8 text-center text-sm text-muted">No pledges found</td></tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
         )}
 
         {tab === "analytics" && (
