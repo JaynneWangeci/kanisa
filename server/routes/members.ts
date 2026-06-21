@@ -23,6 +23,40 @@ setInterval(refreshCouncils, 60000);
 
 export const membersRouter = Router();
 
+membersRouter.get("/template", async (_req, res) => {
+  try {
+    const PDFDocument = (await import("pdfkit")).default;
+    const doc = new PDFDocument({ size: "A4", margin: 50, info: { Title: "Member Template", Author: "AIPCA Bahati Cathedral" } });
+    const chunks: Buffer[] = [];
+    doc.on("data", (c: Buffer) => chunks.push(c));
+    doc.on("end", () => {
+      res.setHeader("Content-Type", "application/pdf");
+      res.setHeader("Content-Disposition", "attachment; filename=member-template.pdf");
+      res.send(Buffer.concat(chunks));
+    });
+
+    doc.fontSize(18).font("Helvetica-Bold").text("AIPCA Bahati Cathedral", { align: "center" });
+    doc.fontSize(14).text("Member Bulk Upload Template", { align: "center" });
+    doc.moveDown(0.5);
+    doc.fontSize(10).font("Helvetica").fillColor("#666666").text("Format: Name - Fellowship  OR  Name, Fellowship", { align: "center" });
+    doc.text("Or just one name per line (uses fellowship selected in upload)", { align: "center" });
+    doc.fillColor("#000000");
+    doc.moveDown(1);
+    doc.fontSize(11).font("Helvetica-Bold").text("Instructions:", { underline: true });
+    doc.fontSize(10).font("Helvetica");
+    doc.list(["Delete sample names below", "Type one name per line", 'Optional: add " - FellowshipName" after each name', "Save as PDF and upload in admin panel"]);
+    doc.moveDown(1);
+    doc.fontSize(11).font("Helvetica-Bold").text("Sample Names (replace these):");
+    doc.moveDown(0.3);
+    doc.fontSize(10).font("Helvetica");
+    ["John Kamau - Maranatha Fellowship", "Mary Wambui - Bethlehem Fellowship", "Peter Njoroge - Jerusalem Fellowship", "Grace Akinyi - Aefeso Fellowship", "", "--- Replace above with your names ---"].forEach(t => doc.text(t, 50, doc.y, { indent: 20 }));
+    doc.end();
+  } catch (err) {
+    console.error("template error:", err);
+    if (!res.headersSent) res.status(500).json({ error: "Failed to generate template" });
+  }
+});
+
 membersRouter.get("/", async (_req, res) => {
   try {
     const db = requireService();

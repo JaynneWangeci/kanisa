@@ -699,6 +699,11 @@ export default function AdminDashboard() {
                     className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm text-ink outline-none focus:border-nobuk file:mr-3 file:rounded file:border-0 file:bg-nobuk file:px-3 file:py-1 file:text-xs file:font-semibold file:text-white hover:file:bg-nobuk-light"
                   />
                   <p className="mt-1 text-[10px] text-muted">PDF with one name per line or comma-separated</p>
+                  <button onClick={() => { const a = document.createElement("a"); a.href = "/api/members/template"; a.download = "member-template.pdf"; a.click(); }}
+                    className="mt-1 flex items-center gap-1 text-[10px] font-semibold text-nobuk hover:underline">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+                    Download template PDF
+                  </button>
                 </div>
                 <div>
                   <label className="mb-1 block text-xs font-bold text-muted">Fellowship for all</label>
